@@ -85,31 +85,6 @@ SceneBase {
     smooth: true
   }
 
-  // circle image with the game direction
-  /*Image {
-    id: depotImage
-    source: "../../assets/img/Depot.png"
-    width: 280
-    height: width
-    anchors.centerIn: depot
-    smooth: true
-    mirror: !depot.clockwise
-
-    onMirrorChanged: {
-      if (!mirror){
-        mirrorAnimation.from = 0
-        mirrorAnimation.to = 180
-      } else {
-        mirrorAnimation.from = 180
-        mirrorAnimation.to = 0
-      }
-      mirrorAnimation.start()
-    }
-
-    NumberAnimation { id: mirrorAnimation; target: depotImage; properties: "rotation";
-      from: 0; to: 180; duration: 400; easing.type: Easing.InOutQuad }
-  }*/
-
   // contains all game logic functions
   GameLogic {
     id: gameLogic
@@ -374,8 +349,6 @@ SceneBase {
   // init the game after switching to the gameScene
   onVisibleChanged: {
     if(visible){
-      //ga.logScreen("GameScene")
-      //flurry.logEvent("Screen.GameScene")
       gameLogic.initGame()
     }
   }

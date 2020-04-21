@@ -159,8 +159,6 @@ EntityBase {
     anchors.fill: parent
     enabled: player && player.connected ? true: false
     onClicked: {
-      ga.logEvent("User", "Show PlayerInfo")
-      flurry.logEvent("User.ShowPlayerInfo")
       gameScene.playerInfoPopup.visible = true
       gameScene.playerInfoPopup.refTag = playerTag
     }

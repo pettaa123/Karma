@@ -178,11 +178,6 @@ GameWindow {
       PropertyChanges {target: window; activeScene: menuScene}
     },
     State {
-      name: "instructions"
-      PropertyChanges {target: instructionScene; opacity: 1}
-      PropertyChanges {target: window; activeScene: instructionScene}
-    },
-    State {
       name: "game"
       PropertyChanges {target: gameScene; opacity: 1}
       PropertyChanges {target: window; activeScene: gameScene}

@@ -24,6 +24,9 @@ Item {
     // the amount of cards to draw, can be increased by draw2 and wild4 cards
     property int drawAmount: 1
 
+    // amount of cards in the depot
+    property int cardsInDepot: 0
+
 
     // sound effect plays when a player gets skipped
     SoundEffect {
@@ -54,6 +57,23 @@ Item {
         }
     }
 
+    // hand out cards
+    function handOutCards(){
+      var handOut = []
+      for (var i = 0; i < deck.cardsInDeck; i ++){
+        if(deck.cardDeck[i].parent==="depot")
+            handOut.push(cardDeck[i])
+      }
+      // deactivate ONU state after drawing cards
+      passedChance()
+      // deactivate card effects after drawing a card
+      depot.effect = false
+      var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+      multiplayer.sendMessage(gameLogic.messageSetEffect, {effect: false, userId: userId})
+      return handOut
+    }
+
+
     // create the depot by placing a single stack card
     function createDepot(){
         depositCard(deck.getTopCardId())
@@ -71,6 +91,7 @@ Item {
         var card = entityManager.getEntityById(cardId)
         // change the parent of the card to depot
         changeParent(card)
+        cardsInDepot++
         // uncover card right away if the player is connected
         // used for wild and wild4 cards
         // activePlayer might be undefined here, when initially synced

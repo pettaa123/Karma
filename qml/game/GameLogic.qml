@@ -431,11 +431,11 @@ Item {
         playerHands.children[i].removeFromHand(cardId)
         depot.depositCard(cardId)
 
-        if (depot.current.variationType === "reverse"){
+        /*if (depot.current.variationType === "reverse"){
           multiplayer.leaderCode(function() {
             depot.reverse()
           })
-        }
+        }*/
 
         // if the card was a wild or wild4 card
         if (depot.current.cardColor === "black"){

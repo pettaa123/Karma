@@ -26,7 +26,7 @@ EntityBase {
 
     // to show all cards on the screen and to test multiplayer syncing, set this to true
     // it is useful for testing, thus always enable it for debug builds and non-publish builds
-    property bool forceShowAllCards: !system.debugBuild && !system.publishBuild
+    property bool forceShowAllCards: system.debugBuild && !system.publishBuild
 
     // access the image and text from outside
     property alias cardImage: cardImage
@@ -133,7 +133,17 @@ EntityBase {
         State {
             name: "stack"
             ParentChange { target: card; parent: newParent; x: 0; y: 0; rotation: 0}
+        },
+        State {
+            name: "china"
+            ParentChange { target: card; parent: newParent; x: 0; y: 0; rotation: 0}
+        },
+        State {
+            name: "chinaHidden"
+            ParentChange { target: card; parent: newParent; x: 0; y: 0; rotation: 0}
         }
+
+
     ]
 
     // transform in the center of the card for the flip animation

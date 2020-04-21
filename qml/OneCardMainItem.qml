@@ -12,7 +12,6 @@ Item {
   // set up properties to access scenes
   property alias menuScene: menuScene
   property alias gameScene: gameScene
-  property alias instructionScene: instructionScene
   property alias matchmakingScene: matchmakingScene
   property alias gameNetworkScene: gameNetworkScene
 
@@ -98,19 +97,6 @@ Item {
     }
   }
 
-  // instruction scene
-  InstructionScene {
-    id: instructionScene
-    onBackButtonPressed: window.state = "menu"
-
-    onMenuButtonPressed: {
-      switch (button){
-      case "cards":
-        window.state = "cards"
-        break
-      }
-    }
-  }
 
   // matchmaking scene
   MultiplayerScene {
