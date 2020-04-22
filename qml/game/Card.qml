@@ -123,6 +123,10 @@ EntityBase {
     // reparent card when it changes its state
     states: [
         State {
+            name: "removed"
+            ParentChange { target: card; parent: newParent; x: 0; y: 0; rotation: 0}
+        },
+        State {
             name: "depot"
             ParentChange { target: card; parent: newParent; x: 0; y: 0; rotation: 0}
         },

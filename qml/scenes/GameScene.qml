@@ -300,13 +300,6 @@ SceneBase {
     }
   }
 
-  // the colorPicker in the middle of the screen
-  ColorPicker {
-    id: colorPicker
-    visible: false
-    anchors.centerIn: depot
-  }
-
   // the gameOver message in the middle of the screen
   GameOverWindow {
     anchors.centerIn: gameWindowAnchorItem

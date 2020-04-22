@@ -13,7 +13,7 @@ Item {
     property var last
     // checklast instead of actual
     property var checkLast
-    // block the player for a short period of time when he gets skipped 
+    // block the player for a short period of time when he gets skipped
     property alias effectTimer: effectTimer
     // the current depot card effect for the next player
     property bool effect: false
@@ -23,9 +23,6 @@ Item {
     property bool clockwise: true
     // the amount of cards to draw, can be increased by draw2 and wild4 cards
     property int drawAmount: 1
-
-    // amount of cards in the depot
-    property int cardsInDepot: 0
 
 
     // sound effect plays when a player gets skipped
@@ -59,18 +56,20 @@ Item {
 
     // hand out cards
     function handOutCards(){
-      var handOut = []
-      for (var i = 0; i < deck.cardsInDeck; i ++){
-        if(deck.cardDeck[i].parent==="depot")
-            handOut.push(cardDeck[i])
-      }
-      // deactivate ONU state after drawing cards
-      passedChance()
-      // deactivate card effects after drawing a card
-      depot.effect = false
-      var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-      multiplayer.sendMessage(gameLogic.messageSetEffect, {effect: false, userId: userId})
-      return handOut
+        var handOut = []
+        for (var i = 0; i < deck.cardsInDeck; i ++){
+            if(deck.cardDeck[i].state==="depot")
+                handOut.push(deck.cardDeck[i])
+        }
+        // deactivate card effects after drawing a card
+        depot.effect = false
+        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+        multiplayer.sendMessage(gameLogic.messageSetEffect, {effect: false, userId: userId})
+
+        current = undefined
+        last=undefined
+
+        return handOut
     }
 
 
@@ -91,7 +90,6 @@ Item {
         var card = entityManager.getEntityById(cardId)
         // change the parent of the card to depot
         changeParent(card)
-        cardsInDepot++
         // uncover card right away if the player is connected
         // used for wild and wild4 cards
         // activePlayer might be undefined here, when initially synced
@@ -138,9 +136,11 @@ Item {
 
     // check if the card has an effect for the next player
     function hasEffect(){
-        if (current.variationType === "8") return true //skip
-        if (current.variationType === "3") return true //invisible
-    else{
+        if (current.variationType === "8" ||
+                current.variationType === "3"){
+            return true
+        } //skip
+        else{
             return false
         }
     }
@@ -156,35 +156,20 @@ Item {
         }
         var card = entityManager.getEntityById(cardId)
 
-        // draw2 and wild4 cards can only be matched by other cards of the same type
-        //if (effect && current.variationType === "draw2" && card.variationType !== "draw2") return false
-        //if (effect && current.variationType === "wild4" && card.variationType !== "wild4") return false
-
-        // the card is valid if it of higher or same type as the current reference card
-        //if (card.cardColor === current.cardColor) return tru
-
-        if (current.variationType === "7"){
-            if(parseInt(card.variationType) <= 7){
-                return true
-            }
-        }
-
-        if (current.variationType === "3"){
-            if(parseInt(card.variationType) <= 7){
-                return true
-            }
-        }
-
-
-
-        if (card.variationType === "2") return true
-        if (card.variationType === "3") return true
-        if (card.variationType === "10"){
+        if (!current){
             return true
         }
-        if (parseInt(card.variationType) >= parseInt(current.variationType)) return true
+        var toBeChecked = checkLast ? last.variationType : current.variationType
+        if (toBeChecked === "7" && (parseInt(card.variationType) <= 7)) return true
 
+        if (card.variationType=== "3") return true
+        if (card.variationType=== "2") return true
+        if (card.variationType=== "10") return true
+        if (parseInt(card.variationType) >= parseInt(toBeChecked)) return true
     }
+
+
+
 
     // play a card effect depending on the card type
     function cardEffect(){
@@ -193,11 +178,12 @@ Item {
                 skip()
             }
             if (current && current.variationType === "3") {
-                checkLast = true
+                checkLast=true
             }
         } else {
             // reset the card effects if they are not active
             skipped = false
+            checkLast= false
             depot.drawAmount = 1
             var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
             multiplayer.sendMessage(gameLogic.messageSetDrawAmount, {amount: 1, userId: userId})

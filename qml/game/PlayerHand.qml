@@ -27,6 +27,8 @@ Item {
     property int score: 0
     // value used to spread the cards in hand
     property double offset: width/10
+    // value activated if hand cards are gone
+    property bool chinaActivated : false
 
 
     // sound effect plays when drawing a card
@@ -107,15 +109,17 @@ Item {
         while(china.length) {
             china.pop()
         }
+        while(chinaHidden.length) {
+            china.pop()
+        }
 
         onu = false
         scaleHand(1.0)
     }
 
     function neatChina(){
-        console.debug("neat china")
-
         offset = originalWidth * zoom / 10
+        console.debug("neat china")
 
         // calculate the card position and rotation in the hand and change the z order
         for (var i = 0; i < china.length; i ++){
@@ -140,9 +144,9 @@ Item {
             // angle span for spread cards in hand
             handAngle = 30 //40
             // card angle depending on the array position
-            cardAngle = handAngle / china.length * (i + 0.5) - handAngle / 2
+            cardAngle = handAngle / chinaHidden.length * (i + 0.5) - handAngle / 2
             //offset of all cards + one card width
-            handWidth = offset * (china.length - 1) + card.originalWidth * zoom
+            handWidth = offset * (chinaHidden.length - 1) + card.originalWidth * zoom
             // x value depending on the array position
             cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
 
@@ -193,7 +197,7 @@ Item {
         onuButton.button.enabled = false
         var pickUp = deck.handOutCards(amount)
 
-        if (china.length==0){
+        if (chinaHidden.length==0){ //if first round
             for (var i = 0; i < 3; i ++){
                 pickUp[i].newParent = playerHand
                 pickUp[i].state = "china"
@@ -245,9 +249,8 @@ Item {
     // pick up specified amount of cards
     function pickUpDepot(){
         var pickUp = depot.handOutCards()
-
         // add the depot cards to the playerHand array
-        for (i = 0; i < pickUp.length; i ++){
+        for (var i = 0; i < pickUp.length; i ++){
             hand.push(pickUp[i])
             changeParent(pickUp[i])
             if (multiplayer.localPlayer == player){
@@ -309,7 +312,7 @@ Item {
 
     // highlight all valid cards by setting the glowImage visible
     function markValid(){
-        if (!depot.skipped && !gameLogic.gameOver && !colorPicker.chosingColor){
+        if (!depot.skipped && !gameLogic.gameOver){
             for (var i = 0; i < hand.length; i ++){
                 if (depot.validCard(hand[i].entityId)){
                     hand[i].glowImage.visible = true
@@ -324,7 +327,7 @@ Item {
             var validId = randomValidId() //ai
             if(validId == null){
                 //deck.markStack()
-                //take stack
+                //take depot
                 pickUpDepot()
             }
         }
@@ -352,8 +355,8 @@ Item {
             china[i].height = china[i].originalHeight * zoom
         }
         for (i =0; i< chinaHidden.length; i++){
-            china[i].width = china[i].originalWidth * zoom
-            china[i].height = china[i].originalHeight * zoom
+            chinaHidden[i].width = china[i].originalWidth * zoom
+            chinaHidden[i].height = china[i].originalHeight * zoom
         }
 
         neatHand()
@@ -384,51 +387,26 @@ Item {
         return valids
     }
 
-    // if the player deposited their second to last card without pressing onu
-    // they missed their chance to activate the ONUButton
-    function missedOnu(){
-        if (hand.length === 0 && !onu){
-            if (multiplayer.myTurn) onuButton.button.enabled = false
-            return true
-        } else {
-            return false
-        }
-    }
-    // check if the player can activate the onu button
-    function closeToWin(){
-        // if the player has 2 or less cards in his hand
-        if (hand.length == 2){
-            // automatically activate onu for the player if he's disconnected or when the ONUButton is removed from the game (onuButton.visible = false)
-            // do not auto-activate it when the player is skipped, onu is already active or the game is already over
-            var userDisconnected = (!multiplayer.activePlayer || !multiplayer.activePlayer.connected)
-            if ((!onuButton.visible || userDisconnected) && !depot.skipped && !onu && !gameLogic.gameOver){
-                var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                onuButton.onu(userId)
-            }
-            // enable the button if the active player is connected
-            var valids = getValidCards()
-            if (multiplayer.myTurn && !depot.skipped && !gameLogic.gameOver && !onu && valids.length > 0){
-                onuButton.button.enabled = true
-            } else if (multiplayer.myTurn){
-                onuButton.button.enabled = false
+    // check if the player has zero cards left and stack is empty
+    function activateChinaCheck(){
+        if (hand.length == 0 && deck.cardsInDeck==0 && chinaHidden.length ==3){
+            for (var i = 0; i < china.length; i++) {
+                hand[i]=china[i]
             }
             return true
-        }else if (multiplayer.myTurn){
-            // deactivate the button if the player has more than 2 cards in his hand
-            onuButton.button.enabled = false
-            return false
         }
+        if (hand.length == 2 && deck.cardsInDeck!=0){
+         return 1
+        }
+        if (hand.length == 1 && deck.cardsInDeck!=0){
+         return 2
+        }
+        if (hand.length == 0 && deck.cardsInDeck!=0){
+         return 3
+        }
+        return 0
     }
 
-    // check if the player has won with zero cards left
-    function checkWin(){
-        if (hand.length == 0 && onu){
-            winSound.play()
-            return true
-        }else{
-            return false
-        }
-    }
 
     // calculate all card points in hand
     function points(){
