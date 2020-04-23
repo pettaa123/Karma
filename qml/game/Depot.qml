@@ -54,24 +54,36 @@ Item {
         }
     }
 
-    // hand out cards
-    function handOutCards(){
+    // put cards away if 10 was played
+    function removeDepot(){
         var handOut = []
         for (var i = 0; i < deck.cardsInDeck; i ++){
             if(deck.cardDeck[i].state==="depot")
-                handOut.push(deck.cardDeck[i])
-        }
-        // deactivate card effects after drawing a card
-        depot.effect = false
-        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-        multiplayer.sendMessage(gameLogic.messageSetEffect, {effect: false, userId: userId})
+                handOut.push(deck.cardDeck[i].entityID)
+            //moveElement(k, 0)
 
-        current = undefined
-        last=undefined
+        }
+        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+        multiplayer.sendMessage(gameLogic.messageDrawDepot, {userId: userId})
+
 
         return handOut
     }
+    // put cards away if 10 was played
+    function handOutDepot(){
+        var handOut = []
+        for (var i = 0; i < deck.cardsInDeck; i ++){
+            if(deck.cardDeck[i].state==="depot")
+                handOut.push(deck.cardDeck[i].entityID)
+            //moveElement(k, 0)
 
+        }
+        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+        multiplayer.sendMessage(gameLogic.messageDrawDepot, {userId: userId})
+
+
+        return handOut
+    }
 
     // create the depot by placing a single stack card
     function createDepot(){
@@ -93,6 +105,8 @@ Item {
         // uncover card right away if the player is connected
         // used for wild and wild4 cards
         // activePlayer might be undefined here, when initially synced
+        console.debug(multiplayer.activeplayer)
+        console.debug(multiplayer.activePlayer.connected)
         if (!multiplayer.activePlayer || multiplayer.activePlayer.connected){
             card.hidden = false
         }
@@ -117,7 +131,6 @@ Item {
         current = card
 
         var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-
         // signal if the placed card has an effect on the next player
         if(hasEffect()){
             effect = true
@@ -156,9 +169,21 @@ Item {
         }
         var card = entityManager.getEntityById(cardId)
 
-        if (!current){
+        if (!current || (checkLast && !last)){
             return true
         }
+
+
+
+        console.debug("checkLast")
+        console.debug(checkLast)
+        console.debug("last")
+        console.debug(last)
+        console.debug("current")
+        console.debug(current)
+
+
+
         var toBeChecked = checkLast ? last.variationType : current.variationType
         if (toBeChecked === "7" && (parseInt(card.variationType) <= 7)) return true
 
@@ -203,18 +228,6 @@ Item {
                 effectTimer.start()
             })
         }
-    }
-
-
-
-    // reverse the current turn direction
-    function reverse(){
-        reverseSound.play()
-        // change direction
-        clockwise ^= true
-        // send current direction to other players
-        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-        multiplayer.sendMessage(gameLogic.messageSetReverse, {clockwise: clockwise, userId: userId})
     }
 
     // increase the drawAmount when a draw2 or wild4 effect is active

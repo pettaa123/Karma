@@ -20,13 +20,13 @@ EntityBase {
     property string cardColor: ""
     property int order
 
+    // to show all cards on the screen and to test multiplayer syncing, set this to true
+    // it is useful for testing, thus always enable it for debug builds and non-publish builds
+    property bool forceShowAllCards: !system.debugBuild && !system.publishBuild
+
     // hidden cards show the back side
     // you could also offer an in-app purchase to show the cards of a player for example!
     property bool hidden: !forceShowAllCards
-
-    // to show all cards on the screen and to test multiplayer syncing, set this to true
-    // it is useful for testing, thus always enable it for debug builds and non-publish builds
-    property bool forceShowAllCards: system.debugBuild && !system.publishBuild
 
     // access the image and text from outside
     property alias cardImage: cardImage
@@ -167,9 +167,6 @@ EntityBase {
         hiddenAnimation.start()
     }
 
-    // update the card image of turning cards
-    // update wild and wild4 cards after selecting a color
-    // use normal multicolor images for wild and wild4 cards
     // color the other cards with the help of HueSaturation
     function updateCardImage(){
         // hidden cards show the back side without effect
@@ -183,26 +180,7 @@ EntityBase {
         card.hue = 0
         card.saturation = 0
         card.lightness = 0.0
-        //layer.enabled = true // enable coloring of card
         cardImage.source = "../../assets/img/cards/" + variationType + "_" + cardColor + ".png"
-        // the numbered cards, skip and draw2 are colored with the help of HueSaturation
-    } //else {
-    //cardImage.layer.enabled = true // enable coloring of card
-    //card.lightness = 0.0
-    //if (cardColor == "yellow") {
-    //  card.hue = 55/360
-    //  card.saturation = 0
-    //} else if (cardColor == "red") {
-    //  card.hue = 0/360
-    //  card.saturation = 0
-    //} else if (cardColor == "green") {
-    //  card.hue = 110/360
-    //  card.saturation = -0.1
-    //} else if (cardColor == "blue") {
-    //  card.hue = 220/360
-    //  card.saturation = -0.1
-    //}
-    //cardImage.source = "../../assets/img/cards/" + variationType + "_red.png"
-
+    }
 }
 

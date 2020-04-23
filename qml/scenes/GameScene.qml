@@ -11,21 +11,16 @@ SceneBase {
 
   // game signals
   signal cardSelected(var cardId)
-  signal stackSelected()
-  signal colorPicked(var pickedColor)
 
   // access the elements from outside
   property alias deck: deck
   property alias depot: depot
   property alias gameLogic: gameLogic
-  property alias onuButton: onuButton
   property alias gameOver: gameOver
   property alias leaveGame: leaveGame
   property alias switchName: switchName
-  property alias drawCounter: drawCounter
   property alias bottomHand: bottomHand
   property alias playerInfoPopup: playerInfoPopup
-  property alias onuHint: onuHint
   property alias rightPlayerTag: rightPlayerTag // ad banner will be aligned based on rightPlayerTag
 
 
@@ -62,6 +57,7 @@ SceneBase {
     }
 
     onPlayerLeft:{
+
     }
 
     onLeaderPlayerChanged:{
@@ -119,8 +115,8 @@ SceneBase {
     text: "Close\nRound"
     width: buttonText.contentWidth + 30
     visible: system.debugBuild && !gameLogic.gameOver
-    anchors.horizontalCenter: onuButton.horizontalCenter
-    anchors.bottom: onuButton.top
+    anchors.horizontalCenter: GameWindow.horizontalCenter
+    anchors.bottom: depot.top
     anchors.bottomMargin: 20
     onClicked: {
       gameLogic.endGame(multiplayer.localPlayer.userId)
@@ -141,79 +137,12 @@ SceneBase {
     }
   }
 
-  // onu button on the left of the depot
-  ONUButton {
-    id: onuButton
-    anchors.verticalCenter: depot.verticalCenter
-    anchors.right: depot.left
-    anchors.rightMargin: 85
-    visible: false // remove ONU button (ONU will auto-activate for all users then, makes game a bit easier and faster to play)
-  }
-
   // the deck on the right of the depot
   Deck {
     id: deck
     anchors.verticalCenter: depot.verticalCenter
     anchors.left: depot.right
     anchors.leftMargin: 90
-  }
-
-  // the drawCounter on top of the depot showing the current drawAmount
-  Text {
-    id: drawCounter
-    anchors.left: depot.right
-    anchors.leftMargin: 18
-    anchors.bottom: depot.top
-    anchors.bottomMargin: 12
-    text: "+" + depot.drawAmount
-    color: "white"
-    font.pixelSize: 40
-    font.family: standardFont.name
-    font.bold: true
-    visible: depot.drawAmount > 1 && !onuHint.visible ? true : false
-  }
-
-  // the drawCounter on top of the depot showing the current drawAmount
-  Text {
-    id: onuHint
-    anchors.left: depot.right
-    anchors.leftMargin: 18
-    anchors.bottom: depot.top
-    anchors.bottomMargin: 12
-    text: "+2"
-    color: "white"
-    font.pixelSize: 40
-    font.family: standardFont.name
-    font.bold: true
-    visible: false
-
-    Text {
-      anchors.left: parent.right
-      anchors.leftMargin: 14
-      anchors.verticalCenter: parent.verticalCenter
-      text: "Forgot to press\nOne Button"
-      color: "white"
-      font.pixelSize: 14
-      font.family: standardFont.name
-      font.bold: true
-    }
-
-    onVisibleChanged: {
-      if (visible){
-        singleTimer.start()
-      }
-    }
-
-    Timer {
-      id: singleTimer
-      interval: 3000
-      repeat: false
-      running: false
-
-      onTriggered: {
-        onuHint.visible = false
-      }
-    }
   }
 
   // the four playerHands placed around the main game field

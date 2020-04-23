@@ -21,8 +21,6 @@ Item {
     property var chinaHidden: []
     // the owner of the cards
     property var player: MultiplayerUser{}
-    // whether the player pressed the ONUButton or not
-    property bool onu: false
     // the score at the end of the game
     property int score: 0
     // value used to spread the cards in hand
@@ -83,19 +81,6 @@ Item {
         smooth: true
     }
 
-    // playerHand bubble image is visible when the player pressed the ONUButton
-    Image {
-        anchors.top: parent.top
-        anchors.right: parent.right
-        source: "../../assets/img/Bubble.png"
-        rotation: parent.rotation * (-1)
-        width: 60
-        height: width
-        z: 100
-        visible: onu
-        smooth: true
-    }
-
     // start the hand by picking up a specified amount of cards
     function startHand(){
         pickUpCards(start)
@@ -113,7 +98,6 @@ Item {
             china.pop()
         }
 
-        onu = false
         scaleHand(1.0)
     }
 
@@ -194,7 +178,6 @@ Item {
 
     // pick up specified amount of cards
     function pickUpCards(amount){
-        onuButton.button.enabled = false
         var pickUp = deck.handOutCards(amount)
 
         if (chinaHidden.length==0){ //if first round
@@ -248,7 +231,11 @@ Item {
 
     // pick up specified amount of cards
     function pickUpDepot(){
-        var pickUp = depot.handOutCards()
+        var pickUp = depot.handOutDepot()
+
+        depot.current = undefined
+        depot.last=undefined
+        depot.effect=false
         // add the depot cards to the playerHand array
         for (var i = 0; i < pickUp.length; i ++){
             hand.push(pickUp[i])

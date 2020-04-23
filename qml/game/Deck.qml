@@ -98,27 +98,12 @@ Item {
             handOut.push(cardDeck[index])
             cardsInStack --
         }
-        // deactivate ONU state after drawing cards
-        //passedChance()
         // deactivate card effects after drawing a card
         //depot.effect = false
         //var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
         //multiplayer.sendMessage(gameLogic.messageSetEffect, {effect: false, userId: userId})
         return handOut
     }
-
-    // deactivate ONU state for active player after drawing cards
-    /*function passedChance(){
-        for (var i = 0; i < playerHands.children.length; i++) {
-            if (playerHands.children[i].player === multiplayer.activePlayer){
-                if (multiplayer.myTurn || !multiplayer.activePlayer || !multiplayer.activePlayer.connected){
-                    playerHands.children[i].onu = false
-                    var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                    multiplayer.sendMessage(gameLogic.messagePressONU, {userId: userId, onu: false})
-                }
-            }
-        }
-    }*/
 
     // the leader shuffles the cardInfo array in the beginning of the game
     function shuffleDeck(){
