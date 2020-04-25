@@ -13,7 +13,7 @@ Item {
     // do not set this too low, otherwise players with higher latency could run into problems as they get skipped by the leader
     property int userInterval: 20 //multiplayer.myTurn && !multiplayer.amLeader ? 14 : 10
     // turn time for AI players, in milliseconds
-    property int aiTurnTime: 1500
+    property int aiTurnTime: 1000
     // restart the game at the end after a few seconds
     property int restartTime: 8000
     // whether the user has already drawn cards this turn or not
@@ -49,8 +49,8 @@ Item {
     Timer {
         id: timer
         repeat: true
-        running: !gameOver
-        interval: 30000
+        running: initialized
+        interval: 10000
 
         onTriggered: {
             remainingTime -= 1
@@ -279,29 +279,31 @@ Item {
 
         // the player selected a card
         onCardSelected: {
-
-
             // deposit the valid card
             if (entityManager.getEntityById(cardId).state === "player" ||
                     entityManager.getEntityById(cardId).state === "china" ||
                     entityManager.getEntityById(cardId).state === "chinaHidden") {
                 if (multiplayer.myTurn && !depot.skipped && !acted) {
 
-
                     if (depot.validCard(cardId)){
                         acted = true
-
                         depositCard(cardId, multiplayer.localPlayer.userId)
                         multiplayer.sendMessage(messageMoveCardsDepot, {cardId: cardId, userId: multiplayer.localPlayer.userId})
-
                         endTurn()
+                    }
+                    else{
+                        for (var i = 0; i < playerHands.children.length; i++) {
+                            // find the playerHand for the active player
+                            // if the selected card is in the playerHand of the active player
+                            if (playerHands.children[i].inHand(cardId)){
+                                depot.handOutDepot()
+                            }
+                        }
                     }
                 }
             }
         }
-
     }
-
 
     // sync deck with leader and set up the game
     function syncDeck(cardInfo){
@@ -351,8 +353,6 @@ Item {
         }
     }
 
-
-
     // let AI take over if the player is not skipped
     function executeAIMove() {
         if(!depot.skipped){
@@ -364,7 +364,8 @@ Item {
     function playRandomValid() {
         // find the playerHand of the active player
         for (var i = 0; i < playerHands.children.length; i++) {
-            if (playerHands.children[i].player === multiplayer.activePlayer && !cardsDrawn){
+            if (playerHands.children[i].player === multiplayer.activePlayer && !cardsDrawn
+                    && !playerHands.children[i].player.done){
                 //if chinaHidden dont mark valid, take a card and check if its valid, if not take depot and just chosen card
                 var validCardId= playerHands.children[i].chinaHiddenAccessible? playerHands.children[i].checkFirstValid(): playerHands.children[i].randomValidId()
 
@@ -411,6 +412,12 @@ Item {
             return
         }
 
+        for (var i = 0; i < playerHands.children.length; i++) {
+            if (playerHands.children[i].player === multiplayer.activePlayer && playerHands.children[i].done){
+                return
+            }
+        }
+        gameLogic.startTurnTimer()
         console.debug("multiplayer.activePlayer.userId: " + multiplayer.activePlayer.userId)
         console.debug("Turn started")
         // start the timer,scale hand and markvalid //WHY THE HELL MARK
@@ -419,7 +426,6 @@ Item {
         depot.cardEffect()//MOVED CHECK BEFORE START
 
 
-        gameLogic.startTurnTimer()
         // the player didn't act yet
         acted = false
         cardsDrawn = false
@@ -487,8 +493,6 @@ Item {
     // initialize the game
     // is called from GameOverWindow when the leader restarts the game, and from GameScene when it got visible from GameScene.onVisibleChanged
     function initGame(calledFromGameOverScreen){
-
-
         if(!multiplayer.initialized && !multiplayer.singlePlayer){
             createGame()
         }
@@ -953,4 +957,5 @@ Item {
         // the true causes a gameStarted to be emitted
         gameLogic.initGame(true)
     }
+
 }

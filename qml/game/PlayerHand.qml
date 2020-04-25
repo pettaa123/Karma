@@ -30,6 +30,8 @@ Item {
 
     //chinaHiddenAccessible if hand is empty
     property bool chinaHiddenAccessible: false
+    //player done
+    property bool done
 
 
     // sound effect plays when drawing a card
@@ -122,6 +124,7 @@ Item {
         this.resetChinaAccessible()
         this.resetChinaHiddenAccessible()
         scaleHand(1.0)
+        done=false
     }
 
     function neatChina(){
@@ -373,7 +376,7 @@ Item {
 
     // highlight all valid cards by setting the glowImage visible
     function markValid(){
-        if (!depot.skipped && !gameLogic.gameOver){
+        if (!depot.skipped && !gameLogic.gameOver){ //!done
 
             if(chinaAccessible){
                 for (var i = 0; i < china.length; i ++){
@@ -508,13 +511,10 @@ Item {
         if (china.length == 0 && chinaHidden.length >0){
             this.setChinaHiddenAccessible()
             this.resetChinaAccessible()
-            //for (var i = 0; i < china.length; i++) {
-            //    hand[i]=chinaHidden[i]
-            //}
-            //while(chinaHidden.length) {
-            //    chinaHidden.pop()
-            //}
             return 0
+        }
+        if( chinaHidden.length == 0){
+            this.done=true
         }
         if (hand.length == 2 && deck.cardsInDeck!=0){
             return 1
