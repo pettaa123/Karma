@@ -57,3 +57,6 @@ ios {
     # Uncomment for using iOS plugin libraries
     # FELGO_PLUGINS += facebook onesignal flurry admob chartboost soomla
 }
+
+DISTFILES += \
+    qml/game/Removed.qml

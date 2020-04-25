@@ -25,8 +25,11 @@ Item {
     property int score: 0
     // value used to spread the cards in hand
     property double offset: width/10
-    // value activated if hand cards are gone
-    property bool chinaActivated : false
+    //chinaAccessible if hand is empty
+    property bool chinaAccessible: false
+
+    //chinaHiddenAccessible if hand is empty
+    property bool chinaHiddenAccessible: false
 
 
     // sound effect plays when drawing a card
@@ -81,9 +84,28 @@ Item {
         smooth: true
     }
 
+
+
+    function setChinaAccessible(){
+        this.chinaAccessible=true
+    }
+
+
+    function setChinaHiddenAccessible(){
+        this.chinaHiddenAccessible=true
+    }
+
+    function resetChinaAccessible(){
+        this.chinaAccessible=false
+    }
+
+    function resetChinaHiddenAccessible(){
+        this.chinaHiddenAccessible=false
+    }
+
     // start the hand by picking up a specified amount of cards
-    function startHand(){
-        pickUpCards(start)
+    function startHand(initialized){
+        pickUpCards(start,initialized)
     }
 
     // reset the hand by removing all cards
@@ -97,7 +119,8 @@ Item {
         while(chinaHidden.length) {
             china.pop()
         }
-
+        this.resetChinaAccessible()
+        this.resetChinaHiddenAccessible()
         scaleHand(1.0)
     }
 
@@ -177,10 +200,10 @@ Item {
     }
 
     // pick up specified amount of cards
-    function pickUpCards(amount){
+    function pickUpCards(amount,initialized){
         var pickUp = deck.handOutCards(amount)
 
-        if (chinaHidden.length==0){ //if first round
+        if (chinaHidden.length==0 && !initialized){ //if first round
             for (var i = 0; i < 3; i ++){
                 pickUp[i].newParent = playerHand
                 pickUp[i].state = "china"
@@ -232,7 +255,10 @@ Item {
     // pick up specified amount of cards
     function pickUpDepot(){
         var pickUp = depot.handOutDepot()
-
+        if(pickUp.length>0){
+            resetChinaAccessible()
+            resetChinaHiddenAccessible()
+        }
         depot.current = undefined
         depot.last=undefined
         depot.effect=false
@@ -240,9 +266,8 @@ Item {
         for (var i = 0; i < pickUp.length; i ++){
             hand.push(pickUp[i])
             changeParent(pickUp[i])
-            if (multiplayer.localPlayer == player){
-                pickUp[i].hidden = false
-            }
+            pickUp[i].hidden= multiplayer.localPlayer == player? false:true
+
             drawSound.play()
         }
         // reorganize the hand
@@ -275,24 +300,73 @@ Item {
 
     // check if a card with a specific id is on this hand
     function inHand(cardId){
-        for (var i = 0; i < hand.length; i ++){
-            if(hand[i].entityId === cardId){
-                return true
+        if (this.chinaHiddenAccessible){
+            for (var i = 0; i < chinaHidden.length; i ++){
+                if(chinaHidden[i].entityId === cardId){
+                    return true
+                }
             }
         }
-        return false
+        else if (this.chinaAccessible){
+            for (i = 0; i < china.length; i ++){
+                if(china[i].entityId === cardId){
+                    return true
+                }
+            }
+        }
+        else {for (i = 0; i < hand.length; i ++){
+                if(hand[i].entityId === cardId){
+                    return true
+                }
+            }
+            return false}
+    }
+
+    // check if the player is out with zero cards left
+    function checkOut(){
+        if (chinaHidden.length == 0){
+            winSound.play()
+            return true
+        }else{
+            return false
+        }
     }
 
     // remove card with a specific id from hand
     function removeFromHand(cardId){
-        for (var i = 0; i < hand.length; i ++){
-            if(hand[i].entityId === cardId){
-                hand[i].width = hand[i].originalWidth
-                hand[i].height = hand[i].originalHeight
-                hand.splice(i, 1)
-                depositSound.play()
-                neatHand()
-                return
+        if (chinaHiddenAccessible){
+            for (var i = 0; i < chinaHidden.length; i ++){
+                if(chinaHidden[i].entityId === cardId){
+                    chinaHidden[i].width = chinaHidden[i].originalWidth
+                    chinaHidden[i].height = chinaHidden[i].originalHeight
+                    chinaHidden.splice(i, 1)
+                    depositSound.play()
+                    neatHand()
+                    return
+                }
+            }
+        }
+        else if(chinaAccessible){
+            for (i = 0; i < china.length; i ++){
+                if(china[i].entityId === cardId){
+                    china[i].width = china[i].originalWidth
+                    china[i].height = china[i].originalHeight
+                    china.splice(i, 1)
+                    depositSound.play()
+                    neatHand()
+                    return
+                }
+            }
+        }
+        else {for (var i = 0; i < hand.length; i ++){
+                if(hand[i].entityId === cardId){
+                    hand[i].width = hand[i].originalWidth
+                    hand[i].height = hand[i].originalHeight
+                    hand.splice(i, 1)
+                    depositSound.play()
+                    neatHand()
+                    return
+                }
             }
         }
     }
@@ -300,22 +374,42 @@ Item {
     // highlight all valid cards by setting the glowImage visible
     function markValid(){
         if (!depot.skipped && !gameLogic.gameOver){
-            for (var i = 0; i < hand.length; i ++){
-                if (depot.validCard(hand[i].entityId)){
-                    hand[i].glowImage.visible = true
-                    hand[i].updateCardImage()
-                }else{
-                    hand[i].glowImage.visible = false
-                    hand[i].saturation = -0.5
-                    hand[i].lightness = 0.5
+
+            if(chinaAccessible){
+                for (var i = 0; i < china.length; i ++){
+                    if (depot.validCard(china[i].entityId)){
+                        china[i].glowImage.visible = true
+                        china[i].updateCardImage()
+                    }else{
+                        china[i].glowImage.visible = false
+                        china[i].saturation = -0.5
+                        china[i].lightness = 0.5
+                    }
+                }
+            }
+            else{
+
+                for (i = 0; i < hand.length; i ++){
+                    if (depot.validCard(hand[i].entityId)){
+                        hand[i].glowImage.visible = true
+                        hand[i].updateCardImage()
+                    }else{
+                        hand[i].glowImage.visible = false
+                        hand[i].saturation = -0.5
+                        hand[i].lightness = 0.5
+                    }
                 }
             }
             // mark the stack if there are no valid cards in hand
-            var validId = randomValidId() //ai
-            if(validId == null){
-                //deck.markStack()
-                //take depot
-                pickUpDepot()
+
+            if(!chinaHiddenAccessible){
+                var validId = randomValidId() //ai
+                if(validId == null){
+                    //deck.markStack()
+                    //take depot
+                    console.debug("validId == null")
+                    pickUpDepot()
+                }
             }
         }
     }
@@ -325,6 +419,19 @@ Item {
         for (var i = 0; i < hand.length; i ++){
             hand[i].glowImage.visible = false
             hand[i].updateCardImage()
+        }
+        if(chinaHiddenAccessible){
+            for (i = 0; i < chinaHidden.length; i ++){
+                chinaHidden[i].glowImage.visible = false
+                chinaHidden[i].updateCardImage()
+            }
+
+        }
+        if(chinaAccessible){
+            for (i = 0; i < china.length; i ++){
+                china[i].glowImage.visible = false
+                china[i].updateCardImage()
+            }
         }
     }
 
@@ -342,8 +449,8 @@ Item {
             china[i].height = china[i].originalHeight * zoom
         }
         for (i =0; i< chinaHidden.length; i++){
-            chinaHidden[i].width = china[i].originalWidth * zoom
-            chinaHidden[i].height = china[i].originalHeight * zoom
+            chinaHidden[i].width = chinaHidden[i].originalWidth * zoom
+            chinaHidden[i].height = chinaHidden[i].originalHeight * zoom
         }
 
         neatHand()
@@ -362,34 +469,61 @@ Item {
         }
     }
 
+    // get a random valid card id from the playerHand
+    function checkFirstValid(){
+        var valids = []
+        if (depot.validCard(chinaHidden[0].entityId)){
+            return chinaHidden[0].entityId
+        }else{
+            return null
+        }
+    }
+
     // get an array with all valid cards
     function getValidCards(){
         var valids = []
         // put all valid card options in the array
-        for (var i = 0; i < hand.length; i ++){
-            if (depot.validCard(hand[i].entityId)){
-                valids.push(entityManager.getEntityById(hand[i].entityId))
+
+        if(chinaAccessible){
+            for (var i = 0; i < china.length; i ++){
+                if (depot.validCard(china[i].entityId)){
+                    valids.push(entityManager.getEntityById(china[i].entityId))
+                }
             }
         }
+        else {for (i = 0; i < hand.length; i ++){
+                if (depot.validCard(hand[i].entityId)){
+                    valids.push(entityManager.getEntityById(hand[i].entityId))
+                }
+            }}
         return valids
     }
 
     // check if the player has zero cards left and stack is empty
     function activateChinaCheck(){
-        if (hand.length == 0 && deck.cardsInDeck==0 && chinaHidden.length ==3){
-            for (var i = 0; i < china.length; i++) {
-                hand[i]=china[i]
-            }
-            return true
+        if (hand.length == 0 && deck.cardsInStack==0 && china.length >0){
+            this.setChinaAccessible()
+            return 0
+        }
+        if (china.length == 0 && chinaHidden.length >0){
+            this.setChinaHiddenAccessible()
+            this.resetChinaAccessible()
+            //for (var i = 0; i < china.length; i++) {
+            //    hand[i]=chinaHidden[i]
+            //}
+            //while(chinaHidden.length) {
+            //    chinaHidden.pop()
+            //}
+            return 0
         }
         if (hand.length == 2 && deck.cardsInDeck!=0){
-         return 1
+            return 1
         }
         if (hand.length == 1 && deck.cardsInDeck!=0){
-         return 2
+            return 2
         }
         if (hand.length == 0 && deck.cardsInDeck!=0){
-         return 3
+            return 3
         }
         return 0
     }

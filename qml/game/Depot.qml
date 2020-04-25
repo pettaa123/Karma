@@ -1,7 +1,6 @@
 import QtQuick 2.0
 import Felgo 3.0
 
-
 Item {
     id: depot
     width: 82
@@ -19,10 +18,6 @@ Item {
     property bool effect: false
     // whether the active player is skipped or not
     property bool skipped: false
-    // the current turn direction
-    property bool clockwise: true
-    // the amount of cards to draw, can be increased by draw2 and wild4 cards
-    property int drawAmount: 1
 
 
     // sound effect plays when a player gets skipped
@@ -49,52 +44,63 @@ Item {
             skipped = false
             var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
             multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: false, userId: userId})
-            console.debug("<<<< Trigger new turn after effect, clockwise: " + clockwise)
-            gameLogic.triggerNewTurn()
+            console.debug("<<<< Trigger new turn after effect")
+            multiplayer.triggerNextTurn()
         }
     }
+
 
     // put cards away if 10 was played
     function removeDepot(){
-        var handOut = []
-        for (var i = 0; i < deck.cardsInDeck; i ++){
-            if(deck.cardDeck[i].state==="depot")
-                handOut.push(deck.cardDeck[i].entityID)
-            //moveElement(k, 0)
+        for (var i = 0; i < deck.cardDeck.length; i ++){
+            if(deck.cardDeck[i].state==="depot"){
+                console.debug(deck.cardDeck[i].entityId)
+                var card = entityManager.getEntityById(deck.cardDeck[i].entityId)
+                //card.newParent = removed
+                card.state = "removed"
+                card.glowImage.visible = false
+                // move the card to the depot and vary the position and rotation
+                card.hidden = true
 
+                // move the card to the depot and vary the position and rotation
+                var rotation = randomIntFromInterval(86, 94)
+                var xOffset = randomIntFromInterval(-4, 4)
+                var yOffset = randomIntFromInterval(-4, 4)
+
+                //var newWidth = Math.floor(card.originalWidth*2/3)
+                //var newHeight = Math.floor(card.originalHeight*2/3)
+
+                //card.resetGeometry()
+                card.rotation = rotation
+                card.width= card.originalWidth*2/3
+                card.height= card.originalHeight*2/3
+                card.x=Math.floor((-2*card.originalWidth)+xOffset)
+                card.y=yOffset
+
+
+
+            }
+
+            //var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+            //multiplayer.sendMessage(gameLogic.messageDrawDepot, {userId: userId})
         }
-        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-        multiplayer.sendMessage(gameLogic.messageDrawDepot, {userId: userId})
-
-
-        return handOut
+        current=undefined
+        last=undefined
     }
-    // put cards away if 10 was played
+
+
+    //no valid card handOut
     function handOutDepot(){
         var handOut = []
-        for (var i = 0; i < deck.cardsInDeck; i ++){
+        for (var i = 0; i < deck.cardDeck.length; i ++){
             if(deck.cardDeck[i].state==="depot")
-                handOut.push(deck.cardDeck[i].entityID)
-            //moveElement(k, 0)
-
+                handOut.push(deck.cardDeck[i])
         }
         var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
         multiplayer.sendMessage(gameLogic.messageDrawDepot, {userId: userId})
 
 
         return handOut
-    }
-
-    // create the depot by placing a single stack card
-    function createDepot(){
-        depositCard(deck.getTopCardId())
-        deck.cardsInStack --
-    }
-
-    // return a random number between two values
-    function randomIntFromInterval(min,max)
-    {
-        return Math.floor(Math.random() * (max - min + 1) + min)
     }
 
     // add the selected card to the depot
@@ -112,12 +118,14 @@ Item {
         }
 
         // move the card to the depot and vary the position and rotation
-        var rotation = randomIntFromInterval(-5, 5)
-        var xOffset = randomIntFromInterval(-5, 5)
-        var yOffset = randomIntFromInterval(-5, 5)
+        var rotation = randomIntFromInterval(-10, 10)
+        var xOffset = randomIntFromInterval(-10, 10)
+        var yOffset = randomIntFromInterval(-10, 10)
+
         card.rotation = rotation
         card.x = xOffset
         card.y = yOffset
+
 
         // the first card starts with z 0, the others get placed on top
         if (!current) {
@@ -169,28 +177,37 @@ Item {
         }
         var card = entityManager.getEntityById(cardId)
 
+        if (card.variationType=== "3") return true
+        if (card.variationType=== "2") return true
+        if (card.variationType=== "10") return true
+
         if (!current || (checkLast && !last)){
             return true
         }
 
-
-
-        console.debug("checkLast")
-        console.debug(checkLast)
-        console.debug("last")
-        console.debug(last)
-        console.debug("current")
-        console.debug(current)
+        var toBeChecked = checkLast ? last : current
+        //if to be checked is a 3 again, dig deeper
+        var lowestCard =false
 
 
 
-        var toBeChecked = checkLast ? last.variationType : current.variationType
-        if (toBeChecked === "7" && (parseInt(card.variationType) <= 7)) return true
+        while(toBeChecked.variationType ==="3" && !lowestCard){
+            for (var j=0;j<deck.cardDeck.length;j++){
+                var z= toBeChecked.z
+                if(deck.cardDeck[j].state==="depot" && (deck.cardDeck[j].z===z-1)){
+                    toBeChecked=deck.cardDeck[j]
+                    break
+                }
+            }
+            if(toBeChecked.z==="0") break
+        }
 
-        if (card.variationType=== "3") return true
-        if (card.variationType=== "2") return true
-        if (card.variationType=== "10") return true
-        if (parseInt(card.variationType) >= parseInt(toBeChecked)) return true
+
+        if (toBeChecked.variationType === "7" && (parseInt(card.variationType) <= "7")) return true
+        if (toBeChecked.variationType === "7" && (parseInt(card.variationType) > "7")) return false
+
+
+        if (parseInt(card.variationType) >= parseInt(toBeChecked.variationType)) return true
     }
 
 
@@ -209,11 +226,10 @@ Item {
             // reset the card effects if they are not active
             skipped = false
             checkLast= false
-            depot.drawAmount = 1
-            var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-            multiplayer.sendMessage(gameLogic.messageSetDrawAmount, {amount: 1, userId: userId})
         }
     }
+
+
 
     // skip the current player by playing a sound, setting the skipped variable and starting the skip timer
     function skip(){
@@ -230,38 +246,34 @@ Item {
         }
     }
 
-    // increase the drawAmount when a draw2 or wild4 effect is active
-    function draw(amount){
-        if (drawAmount == 1) {
-            drawAmount = amount
-        } else {
-            drawAmount += amount
-        }
-        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-        multiplayer.sendMessage(gameLogic.messageSetDrawAmount, {amount: depot.drawAmount, userId: userId})
-    }
-
     // reset the depot
     function reset(){
         skipped = false
-        clockwise = true
-        drawAmount = 1
         effect = false
         effectTimer.stop()
     }
 
     // sync the depot with the leader
-    function syncDepot(depotCardIDs, currentId, currentCardColor, skipped, clockwise, effect, drawAmount){
+    function syncDepot(depotCardIDs, currentId, skipped, effect){
         for (var i = 0; i < depotCardIDs.length; i++){
             depositCard(depotCardIDs[i])
             deck.cardsInStack --
         }
 
         depositCard(currentId)
-        current.cardColor = currentCardColor
         depot.skipped = skipped
-        depot.clockwise = clockwise
         depot.effect = effect
-        depot.drawAmount = drawAmount
+    }
+
+    // create the depot by placing a single stack card
+    function createDepot(){
+        depositCard(deck.getTopCardId())
+        deck.cardsInStack --
+    }
+
+    // return a random number between two values
+    function randomIntFromInterval(min,max)
+    {
+        return Math.floor(Math.random() * (max - min + 1) + min)
     }
 }

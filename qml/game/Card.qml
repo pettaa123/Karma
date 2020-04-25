@@ -11,8 +11,8 @@ EntityBase {
     transformOrigin: Item.Bottom
 
     // original card size for zoom
-    property int originalWidth: 74
-    property int originalHeight: 115
+    property int originalWidth: 82
+    property int originalHeight: 134
 
     // these properties are different for every card type
     variationType: ""
@@ -22,7 +22,7 @@ EntityBase {
 
     // to show all cards on the screen and to test multiplayer syncing, set this to true
     // it is useful for testing, thus always enable it for debug builds and non-publish builds
-    property bool forceShowAllCards: !system.debugBuild && !system.publishBuild
+    property bool forceShowAllCards: system.debugBuild && !system.publishBuild
 
     // hidden cards show the back side
     // you could also offer an in-app purchase to show the cards of a player for example!
@@ -182,5 +182,6 @@ EntityBase {
         card.lightness = 0.0
         cardImage.source = "../../assets/img/cards/" + variationType + "_" + cardColor + ".png"
     }
+
 }
 

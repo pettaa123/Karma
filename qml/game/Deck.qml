@@ -52,11 +52,6 @@ Item {
 
         // create karo, herz, pik and kreuz colored cards
         for (var i = 0; i < 4; i ++){
-            //// one zero card per color
-            //card = {variationType: types[0], cardColor: cardColor[i], points: 5, hidden: true, order: order}
-            //cardInfo.push(card)
-            //order ++
-
             // one 2-Ass value cards per color
             for (var j = 0; j < 13; j ++){
                 card = {variationType: types[j], cardColor: cardColor[i], points: 1, hidden: true, order: order}
@@ -66,7 +61,6 @@ Item {
         }
 
     }
-
 
     // create the card entities with the cardInfo array
     function printDeck(){
@@ -117,12 +111,6 @@ Item {
         cardsInStack = cardsInDeck
     }
 
-    function removeDepot(){
-        for (var i=0;i<cardDeck.length;i++){
-            if(cardDeck[i].state==="depot") cardDeck[i].state = "removed"
-        }
-    }
-
     // remove all cards and playerHands between games
     function reset(){
         var toRemoveEntityTypes = ["card"]
@@ -161,42 +149,11 @@ Item {
         card.glowImage.visible = true
     }
 
-    // unmark the stack
+    // unmark the stack and removed
     function unmark(){
         if (cardDeck.length <= 0) return
         var card = entityManager.getEntityById(getTopCardId())
         card.glowImage.visible = false
-    }
-
-    // move the old depot cards to the stack if there are no cards left to draw
-    function reStack(){
-        var cardIds = []
-        if (cardsInStack <= 1){
-            // find all old depot cards
-            for (var i = 0; i < cardDeck.length; i ++){
-                if (cardDeck[i].state === "depot" && cardDeck[i].entityId !== depot.current.entityId){
-                    cardIds.push(cardDeck[i].entityId)
-                }
-            }
-            // reparent and hide the cards and move them to the beginning of the cardDeck array
-            for (var j = 0; j < cardIds.length; j++) {
-                for (var k = 0; k < cardDeck.length; k ++){
-                    if (cardDeck[k].entityId == cardIds[j]){
-                        if(cardDeck[k].variationType == "wild" || cardDeck[k].variationType == "wild4"){
-                            cardDeck[k].cardColor = "black"
-                        }
-                        cardDeck[k].hidden = true
-                        cardDeck[k].newParent = deck
-                        cardDeck[k].state = "stack"
-                        moveElement(k, 0)
-                        cardsInStack ++
-                        break
-                    }
-                }
-            }
-        }
-        // reposition the new cards to create a stack
-        offsetStack()
     }
 
     // move the stack cards to the beginning of the cardDeck array
