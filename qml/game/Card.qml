@@ -22,7 +22,7 @@ EntityBase {
 
     // to show all cards on the screen and to test multiplayer syncing, set this to true
     // it is useful for testing, thus always enable it for debug builds and non-publish builds
-    property bool forceShowAllCards: system.debugBuild && !system.publishBuild
+    property bool forceShowAllCards: !system.debugBuild && !system.publishBuild
 
     // hidden cards show the back side
     // you could also offer an in-app purchase to show the cards of a player for example!

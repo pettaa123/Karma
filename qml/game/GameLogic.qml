@@ -37,6 +37,7 @@ Item {
     property int messageRequestPlayerTags: 12
 
     property int messageDrawDepot: 13
+    property int messageMoveCardDepot: 14//REMOV
 
     // gets set to true when a message is received before the game state got synced. in that case, request a new game state
     property bool receivedMessageBeforeGameStateInSync: false
@@ -329,6 +330,30 @@ Item {
         chat.reset()
     }
 
+    // deposit the selected cards
+    function depositCards(cardIds, userId){
+        // unmark all highlighted cards
+        unmark()
+        // scale down the active localPlayer playerHand
+        scaleHand(1.0)
+        for (var i = 0; i < playerHands.children.length; i++) {
+            for(var j = 0; j<cardIds.length;j++){
+                var cardId=cardIds? cardIds[j]:0
+                // find the playerHand for the active player
+                // if the selected card is in the playerHand of the active player
+                if (playerHands.children[i].inHand(cardId)){
+                    // remove and deposit the card
+                    playerHands.children[i].removeFromHand(cardId)
+                    depot.depositCard(cardId)
+                }
+                // uncover the card for disconnected players after chosing the color
+                if (!multiplayer.activePlayer || !multiplayer.activePlayer.connected && depot.current){
+                    depot.current.hidden = false
+                }
+            }
+        }
+    }
+
     // deposit the selected card
     function depositCard(cardId, userId){
         // unmark all highlighted cards
@@ -365,14 +390,14 @@ Item {
             if (playerHands.children[i].player === multiplayer.activePlayer && !cardsDrawn
                     && !playerHands.children[i].player.done){
                 //if chinaHidden dont mark valid, take a card and check if its valid, if not take depot and just chosen card
-                var validCardId= playerHands.children[i].chinaHiddenAccessible? playerHands.children[i].checkFirstValid(): playerHands.children[i].randomValidId()
+                var validCardIds= playerHands.children[i].chinaHiddenAccessible? playerHands.children[i].checkFirstValid(): playerHands.children[i].randomValidId()
 
                 var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
 
                 // deposit the valid card or draw depot
-                if (validCardId){
-                    multiplayer.sendMessage(messageMoveCardsDepot, {cardId: validCardId, userId: userId})
-                    depositCard(validCardId, userId)
+                if (validCardIds){
+                    multiplayer.sendMessage(messageMoveCardsDepot, {cardIds: validCardIds, userId: userId})
+                    depositCards(validCardIds, userId)
                 } else {
                     multiplayer.sendMessage(messageMoveDepotToHand, {userId: userId})
                     takeDepot(userId)

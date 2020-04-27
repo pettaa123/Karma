@@ -366,7 +366,7 @@ Item {
             }
         }
         else if(chinaAccessible){
-            for (i = 0; i < china.length; i ++){
+            for (var i = 0; i < china.length; i ++){
                 if(china[i].entityId === cardId){
                     china[i].width = china[i].originalWidth
                     china[i].height = china[i].originalHeight
@@ -413,10 +413,14 @@ Item {
                 console.debug(hand.length)
                 for (i = 0; i < hand.length; i ++){
                     if (depot.validCard(hand[i].entityId)){
-                        hand[i].glowImage.visible = true
+                        console.debug("ifglowimagestart")
+                        hand[i].glowImage.visible=  true
+                        console.debug("ifglowimageend")
                         hand[i].updateCardImage()
                     }else{
+                        console.debug("elseglowimagestart")
                         hand[i].glowImage.visible = false
+                        console.debug("elseglowimageend")
                         hand[i].saturation = -0.5
                         hand[i].lightness = 0.5
                     }
@@ -484,11 +488,17 @@ Item {
     // get a random valid card id from the playerHand
     function randomValidId(){
         console.debug("random valid started")
+        var validIds = []
         var valids = getValidCards()
         if (valids.length > 0){
             // return a random valid card from the array
             var randomIndex = Math.floor(Math.random() * (valids.length))
-            return valids[randomIndex].entityId
+            for(var i=0; i<valids.length;i++){
+                if(valids[i].variationType==valids[randomIndex].variationType){
+                    validIds.push(valids[i].entityId)
+                }
+            }
+            return validIds
         }else{
             return null
         }
@@ -496,9 +506,10 @@ Item {
 
     // get a random valid card id from the playerHand
     function checkFirstValid(){
-        var valids = []
+        var validIds = []
         if (depot.validCard(chinaHidden[0].entityId)){
-            return chinaHidden[0].entityId
+            validIds.push(chinaHidden[0].entityId)
+            return validIds
         }else{
             moveFromChinaHiddenToHand(chinaHidden[0].entityId)
             return null
