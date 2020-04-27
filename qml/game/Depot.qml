@@ -80,9 +80,6 @@ Item {
 
 
             }
-
-            //var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-            //multiplayer.sendMessage(gameLogic.messageDrawDepot, {userId: userId})
         }
         current=undefined
         last=undefined
@@ -215,6 +212,7 @@ Item {
 
     // play a card effect depending on the card type
     function cardEffect(){
+        console.debug("cardEffect started")
         if (effect){
             if (current && current.variationType === "8") {
                 skip()
@@ -227,6 +225,7 @@ Item {
             skipped = false
             checkLast= false
         }
+        console.debug("cardEffect ended")
     }
 
 

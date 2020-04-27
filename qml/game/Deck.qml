@@ -150,11 +150,11 @@ Item {
     }
 
     // unmark the stack and removed
-    function unmark(){
-        if (cardDeck.length <= 0) return
-        var card = entityManager.getEntityById(getTopCardId())
-        card.glowImage.visible = false
-    }
+    //function unmark(){
+    //    if (cardDeck.length <= 0) return
+    //    var card = entityManager.getEntityById(getTopCardId())
+    //    card.glowImage.visible = false
+    //}
 
     // move the stack cards to the beginning of the cardDeck array
     function moveElement(from, to){

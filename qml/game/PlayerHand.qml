@@ -124,7 +124,8 @@ Item {
         this.resetChinaAccessible()
         this.resetChinaHiddenAccessible()
         scaleHand(1.0)
-        done=false
+        this.done=false
+
     }
 
     function neatChina(){
@@ -165,15 +166,17 @@ Item {
             card.x = cardX - originalWidth/3
             card.z = i -100 + playerHandImage.z
         }
+        console.debug("neat china ended")
     }
 
     // organize the hand and spread the cards
     function neatHand(){
         console.debug("neatHand")
         // sort all cards by their natural order
-        hand.sort(function(a, b) {
+        if(hand.length >1){hand.sort(function(a, b) {
             return a.order - b.order
         })
+        }
 
         // recalculate the offset between cards if there are too many in the hand
         // make sure they stay within the playerHand
@@ -199,7 +202,7 @@ Item {
             card.x = cardX
             card.z = i +50 + playerHandImage.z
         }
-
+        console.debug("neatHand ended")
     }
 
     // pick up specified amount of cards
@@ -325,15 +328,28 @@ Item {
             return false}
     }
 
-    // check if the player is out with zero cards left
-    function checkOut(){
-        if (chinaHidden.length == 0){
-            winSound.play()
-            return true
-        }else{
-            return false
+    function moveFromChinaHiddenToHand(cardId){
+        if (chinaHiddenAccessible){
+            for (var i = 0; i < chinaHidden.length; i ++){
+                if(chinaHidden[i].entityId === cardId){
+
+                    // add the selected chinaHidden card to the playerHand array
+                    hand.push(chinaHidden[i])
+                    changeParent(chinaHidden[i])
+                    if (multiplayer.localPlayer == player){
+                        chinaHidden[i].hidden = false
+                    }
+                    // reorganize the hand
+                    chinaHidden[i].width = chinaHidden[i].originalWidth
+                    chinaHidden[i].height = chinaHidden[i].originalHeight
+                    chinaHidden.splice(i, 1)
+                }
+                neatHand()
+                return
+            }
         }
     }
+
 
     // remove card with a specific id from hand
     function removeFromHand(cardId){
@@ -376,8 +392,10 @@ Item {
 
     // highlight all valid cards by setting the glowImage visible
     function markValid(){
+        console.debug("PH mark Valid started")
         if (!depot.skipped && !gameLogic.gameOver){ //!done
-
+            console.debug("chinaAccessible:")
+            console.debug(chinaAccessible)
             if(chinaAccessible){
                 for (var i = 0; i < china.length; i ++){
                     if (depot.validCard(china[i].entityId)){
@@ -391,7 +409,8 @@ Item {
                 }
             }
             else{
-
+                console.debug("else handLength:")
+                console.debug(hand.length)
                 for (i = 0; i < hand.length; i ++){
                     if (depot.validCard(hand[i].entityId)){
                         hand[i].glowImage.visible = true
@@ -404,7 +423,8 @@ Item {
                 }
             }
             // mark the stack if there are no valid cards in hand
-
+            console.debug("handLength:")
+            console.debug(hand.length)
             if(!chinaHiddenAccessible){
                 var validId = randomValidId() //ai
                 if(validId == null){
@@ -415,6 +435,7 @@ Item {
                 }
             }
         }
+        console.debug("PH mark Valid ended")
     }
 
     // unmark all cards in hand
@@ -462,6 +483,7 @@ Item {
 
     // get a random valid card id from the playerHand
     function randomValidId(){
+        console.debug("random valid started")
         var valids = getValidCards()
         if (valids.length > 0){
             // return a random valid card from the array
@@ -478,6 +500,7 @@ Item {
         if (depot.validCard(chinaHidden[0].entityId)){
             return chinaHidden[0].entityId
         }else{
+            moveFromChinaHiddenToHand(chinaHidden[0].entityId)
             return null
         }
     }
@@ -504,11 +527,12 @@ Item {
 
     // check if the player has zero cards left and stack is empty
     function activateChinaCheck(){
+        console.debug("activate china check")
         if (hand.length == 0 && deck.cardsInStack==0 && china.length >0){
             this.setChinaAccessible()
             return 0
         }
-        if (china.length == 0 && chinaHidden.length >0){
+        if (hand.length ==0 && china.length == 0 && chinaHidden.length >0){
             this.setChinaHiddenAccessible()
             this.resetChinaAccessible()
             return 0
