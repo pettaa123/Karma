@@ -50,6 +50,10 @@ Item {
     }
 
 
+
+
+
+
     // put cards away if 10 was played
     function removeDepot(){
         for (var i = 0; i < deck.cardDeck.length; i ++){
@@ -178,17 +182,15 @@ Item {
         if (card.variationType=== "2") return true
         if (card.variationType=== "10") return true
 
+
         if (!current || (checkLast && !last)){
             return true
         }
-
+        console.debug("checkLast")
+        console.debug(checkLast)
         var toBeChecked = checkLast ? last : current
         //if to be checked is a 3 again, dig deeper
-        var lowestCard =false
-
-
-
-        while(toBeChecked.variationType ==="3" && !lowestCard){
+        while(toBeChecked.variationType ==="3"){
             for (var j=0;j<deck.cardDeck.length;j++){
                 var z= toBeChecked.z
                 if(deck.cardDeck[j].state==="depot" && (deck.cardDeck[j].z===z-1)){

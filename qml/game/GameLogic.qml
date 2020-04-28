@@ -49,6 +49,20 @@ Item {
         source: "../../assets/snd/color.wav"
     }
 
+    // blocks the player for a short period of time and trigger a new turn when he gets skipped
+    Timer {
+        id: waitInputTimer
+        repeat: false
+        interval: 4000
+        onTriggered: {
+            effectTimer.stop()
+            var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+            multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: false, userId: userId})
+            console.debug("<<<< Trigger new turn if player doesnt pick another card")
+            endTurn()
+        }
+    }
+
     // timer decreases the remaining turn time for the active player
     Timer {
         id: timer
@@ -65,8 +79,8 @@ Item {
             // mark the valid card options for the active player
             if (multiplayer.myTurn){
                 console.debug("timer markValid n scaleHand")
-                markValid()
-                scaleHand()
+                //markValid()
+                //scaleHand()
             }
             // repaint the timer circle on the playerTag every second
             for (var i = 0; i < playerTags.children.length; i++){
@@ -291,10 +305,24 @@ Item {
                 if (multiplayer.myTurn && !depot.skipped && !acted) {
 
                     if (depot.validCard(cardId)){
+                        var validIds=checkForMultiples(cardId)
                         acted = true
                         depositCard(cardId, multiplayer.localPlayer.userId)
                         multiplayer.sendMessage(messageMoveCardsDepot, {cardId: cardId, userId: multiplayer.localPlayer.userId})
-                        endTurn()
+                        if(validIds && validIds.length>1){ //give the player the chance to select a second card
+                            acted = false
+                            scaleHand()
+                            markMultiples(cardId)
+
+                            if (multiplayer.activePlayer && multiplayer.activePlayer.connected){
+                                multiplayer.leaderCode(function() {
+                                    waitInputTimer.start()
+                                })
+                            }
+                        }
+                        else{acted=true
+                            endTurn()
+                        }
                     }
                     else{
                         for (var i = 0; i < playerHands.children.length; i++) {
@@ -309,6 +337,32 @@ Item {
                     }
                 }
             }
+        }
+    }
+
+    function checkForMultiples(cardId){
+        var validIds = []
+        for (var i = 0; i < playerHands.children.length; i++) {
+            // find the playerHand for the active player
+            // if the selected card is in the playerHand of the active player
+            if (playerHands.children[i].inHand(cardId) && playerHands.children[i].chinaHiddenAccessible===false){
+                // put all valid card ids in the array
+                if(playerHands.children[i].chinaAccessible){
+                    for (var j = 0; j < playerHands.children[i].china.length; j ++){
+                        if (playerHands.children[i].china[j].variationType===entityManager.getEntityById(cardId).variationType){
+                            validIds.push(playerHands.children[i].china[j].entityId)
+                        }
+                    }
+                }
+                else {for (var j = 0; j < playerHands.children[i].hand.length; j ++){
+                        if (playerHands.children[i].hand[j].variationType===entityManager.getEntityById(cardId).variationType){
+                            validIds.push(playerHands.children[i].hand[j].entityId)
+                        }
+                    }
+                }
+                return validIds
+            }
+            return validIds
         }
     }
 
@@ -379,20 +433,22 @@ Item {
     // let AI take over if the player is not skipped
     function executeAIMove() {
         if(!depot.skipped){
-            playRandomValid()
+            depot.cardEffect()//MOVED CHECK BEFORE START
+            playRandomValids()
         }
     }
 
     // play a random valid card from the playerHand of the active player
-    function playRandomValid() {
+    function playRandomValids() {
         console.debug("playRandomValid started")
         // find the playerHand of the active player
         for (var i = 0; i < playerHands.children.length; i++) {
             if (playerHands.children[i].player === multiplayer.activePlayer && !cardsDrawn
                     && !playerHands.children[i].player.done){
                 //if chinaHidden dont mark valid, take a card and check if its valid, if not take depot and just chosen card
-                var validCardIds= playerHands.children[i].chinaHiddenAccessible? playerHands.children[i].checkFirstValid(): playerHands.children[i].randomValidId()
-
+                var validCardIds= playerHands.children[i].chinaHiddenAccessible? playerHands.children[i].checkFirstValid(): playerHands.children[i].randomValidIds()
+                console.debug("validCardIds length")
+                if(validCardIds) {console.debug(validCardIds.length)}
                 var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
 
                 // deposit the valid card or draw depot
@@ -782,6 +838,21 @@ Item {
     }
 
     // find the playerHand of the active player and mark all valid card options
+    function markMultiples(cardId){
+        console.debug("GL markMultiples started")
+        if (multiplayer.myTurn && !acted){
+            for (var i = 0; i < playerHands.children.length; i++) {
+                if (playerHands.children[i].player === multiplayer.activePlayer){
+                    playerHands.children[i].markMultiples(cardId)
+                }
+            }
+        } else {
+            unmark()
+        }
+        console.debug("GL markMultiples ended")
+    }
+
+    // find the playerHand of the active player and mark all valid card options
     function markValid(){
         console.debug("GL markValid started")
         if (multiplayer.myTurn && !acted){
@@ -833,11 +904,13 @@ Item {
                 if(depot.current){
                     if (depot.current.variationType === "10"){
                         depot.removeDepot()
+                        playerHands.children[i].activateChinaCheck()
                         if(playerHands.children[i].chinaHidden.length>0){
                             turnStarted(multiplayer.activePlayer)
                             again=true
                             acted=false
                         }
+                        else{console.debug("WWIIIIINN")}
                     }
                 }
                 if (!again){

@@ -430,17 +430,59 @@ Item {
             console.debug("handLength:")
             console.debug(hand.length)
             if(!chinaHiddenAccessible){
-                var validId = randomValidId() //ai
-                if(validId == null){
+                var validIds = randomValidIds() //ai
+                if(validIds == null){
                     //deck.markStack()
                     //take depot
-                    console.debug("validId == null")
+                    console.debug("validIds == null")
                     pickUpDepot()
                 }
             }
         }
         console.debug("PH mark Valid ended")
     }
+
+    // highlight all valid cards by setting the glowImage visible
+    function markMultiples(cardId){
+        console.debug("PH mark Multiples started")
+        if (!depot.skipped && !gameLogic.gameOver){ //!done
+            console.debug("chinaAccessible:")
+            console.debug(chinaAccessible)
+            var card=entityManager.getEntityById(cardId)
+            if(chinaAccessible){
+                for (var i = 0; i < china.length; i ++){
+                    if (china[i].variationType===card.variationType){
+                        china[i].glowImage.visible = true
+                        china[i].updateCardImage()
+                    }else{
+                        china[i].glowImage.visible = false
+                        china[i].saturation = -0.5
+                        china[i].lightness = 0.5
+                    }
+                }
+            }
+            else{
+                console.debug("else handLength:")
+                console.debug(hand.length)
+                for (i = 0; i < hand.length; i ++){
+                    if (hand[i].variationType===card.variationType){
+                        console.debug("ifglowimagestart")
+                        hand[i].glowImage.visible=  true
+                        console.debug("ifglowimageend")
+                        hand[i].updateCardImage()
+                    }else{
+                        console.debug("elseglowimagestart")
+                        hand[i].glowImage.visible = false
+                        console.debug("elseglowimageend")
+                        hand[i].saturation = -0.5
+                        hand[i].lightness = 0.5
+                    }
+                }
+            }
+        }
+        console.debug("PH mark Multiples ended")
+    }
+
 
     // unmark all cards in hand
     function unmark(){
@@ -486,7 +528,7 @@ Item {
     }
 
     // get a random valid card id from the playerHand
-    function randomValidId(){
+    function randomValidIds(){
         console.debug("random valid started")
         var validIds = []
         var valids = getValidCards()
