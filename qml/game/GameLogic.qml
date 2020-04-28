@@ -299,7 +299,8 @@ Item {
                         for (var i = 0; i < playerHands.children.length; i++) {
                             // find the playerHand for the active player
                             // if the selected card is in the playerHand of the active player
-                            if (playerHands.children[i].inHand(cardId)){
+                            if (playerHands.children[i].inHand(cardId) && playerHands.children[i].hand.length===0
+                                    && playerHands.children[i].china.length===0){
                                 playerHands.children[i].moveFromChinaHiddenToHand(cardId)
                                 playerHands.children[i].pickUpDepot()
                             }

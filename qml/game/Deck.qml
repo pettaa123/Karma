@@ -51,10 +51,10 @@ Item {
         var order = 0
 
         // create karo, herz, pik and kreuz colored cards
-        for (var i = 0; i < 4; i ++){
+        for (var i = 0; i < 13; i ++){
             // one 2-Ass value cards per color
-            for (var j = 0; j < 13; j ++){
-                card = {variationType: types[j], cardColor: cardColor[i], points: 1, hidden: true, order: order}
+            for (var j = 0; j < 4; j ++){
+                card = {variationType: types[i], cardColor: cardColor[j], points: 1, hidden: true, order: order}
                 cardInfo.push(card)
                 order ++
             }

@@ -205,6 +205,8 @@ Item {
 
 
         if (parseInt(card.variationType) >= parseInt(toBeChecked.variationType)) return true
+
+        return false
     }
 
 

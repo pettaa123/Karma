@@ -344,7 +344,7 @@ Item {
                     chinaHidden[i].height = chinaHidden[i].originalHeight
                     chinaHidden.splice(i, 1)
                 }
-                neatHand()
+                //neatHand()
                 return
             }
         }
@@ -537,7 +537,7 @@ Item {
             this.resetChinaAccessible()
             return 0
         }
-        if( chinaHidden.length == 0){
+        if( chinaHidden.length == 0 && hand.length == 0){
             this.done=true
         }
         if (hand.length == 2 && deck.cardsInDeck!=0){
