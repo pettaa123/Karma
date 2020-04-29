@@ -182,13 +182,6 @@ Item {
         if (card.variationType=== "2") return true
         if (card.variationType=== "10") return true
 
-        console.debug("checkLast")
-        console.debug(checkLast)
-        console.debug("last")
-        console.debug(last)
-        console.debug("current")
-        console.debug(current)
-
         if (!current || (checkLast && !last)){
             return true
         }
@@ -198,8 +191,6 @@ Item {
         while(toBeChecked.variationType ==="3"){
             for (var j=0;j<deck.cardDeck.length;j++){
                 var z= toBeChecked.z
-                console.debug("z")
-                console.debug(z)
                 if(deck.cardDeck[j].state==="depot" && (deck.cardDeck[j].z===z-1)){
                     toBeChecked=deck.cardDeck[j]
                     break
@@ -224,19 +215,23 @@ Item {
 
     // play a card effect depending on the card type
     function cardEffect(){
-        console.debug("cardEffect started")
-        if (effect){
-            if (current && current.variationType === "8") {
-                skip()
+                console.debug("cardEffect started")
+        for (var i = 0; i < playerHands.children.length; i++) {
+            if (playerHands.children[i].player === multiplayer.activePlayer && !playerHands.children[i].done){
+                if (effect){
+                    if (current && current.variationType === "8") {
+                        skip()
+                    }
+                    if (current && current.variationType === "3") {
+                        checkLast=true
+                    }
+                } else {
+                    // reset the card effects if they are not active
+                    skipped = false
+                    checkLast= false
+                    multiple=false
+                }
             }
-            if (current && current.variationType === "3") {
-                checkLast=true
-            }
-        } else {
-            // reset the card effects if they are not active
-            skipped = false
-            checkLast= false
-            multiple=false
         }
         console.debug("cardEffect ended")
     }

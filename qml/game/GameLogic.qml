@@ -74,12 +74,6 @@ Item {
             if (remainingTime === 0) {
                 gameLogic.turnTimedOut()
             }
-            // mark the valid card options for the active player
-            if (multiplayer.myTurn){
-                console.debug("timer markValid n scaleHand")
-                //markValid()
-                //scaleHand()
-            }
             // repaint the timer circle on the playerTag every second
             for (var i = 0; i < playerTags.children.length; i++){
                 playerTags.children[i].canvas.requestPaint()
@@ -345,6 +339,7 @@ Item {
                                 playerHands.children[i].moveFromChinaHiddenToHand(cardId)
                                 playerHands.children[i].pickUpDepot()
                                 scaleHand()
+                                endTurn()
                             }
                         }
                     }
@@ -446,7 +441,6 @@ Item {
     // let AI take over if the player is not skipped
     function executeAIMove() {
         if(!depot.skipped){
-            depot.cardEffect()//MOVED CHECK BEFORE START
             playRandomValids()
         }
     }
@@ -457,6 +451,7 @@ Item {
         // find the playerHand of the active player
         for (var i = 0; i < playerHands.children.length; i++) {
             if (playerHands.children[i].player === multiplayer.activePlayer && !playerHands.children[i].player.done){
+                depot.cardEffect()
                 //if chinaHidden dont mark valid, take a card and check if its valid, if not take depot and just chosen card
                 var validCardIds= playerHands.children[i].chinaHiddenAccessible? playerHands.children[i].checkFirstValid(): playerHands.children[i].randomValidIds()
                 console.debug("validCardIds length")
@@ -490,7 +485,6 @@ Item {
     function startTurnTimer() {
         console.debug("startTurnTimer")
         timer.stop()
-        // 20 seconds
         remainingTime = userInterval
         if (!gameOver && !depot.skipped) {
             timer.start()
@@ -508,19 +502,25 @@ Item {
             return
         }
 
+        depot.cardEffect()//MOVED CHECK BEFORE START
+
         for (var i = 0; i < playerHands.children.length; i++) {
             playerHands.children[i].activateChinaCheck()
+            //endTurn is player is already done
             if (playerHands.children[i].player === multiplayer.activePlayer && playerHands.children[i].done){
                 endTurn()
             }
         }
+
+
+
         gameLogic.startTurnTimer()
         console.debug("multiplayer.activePlayer.userId: " + multiplayer.activePlayer.userId)
         console.debug("Turn started")
         // start the timer,scale hand and markvalid //WHY THE HELL MARK
 
         // check if the current card has an effect for the active player
-        depot.cardEffect()//MOVED CHECK BEFORE START
+
 
 
         // the player didn't act yet

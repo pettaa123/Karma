@@ -426,14 +426,10 @@ Item {
                 console.debug(hand.length)
                 for (i = 0; i < hand.length; i ++){
                     if (depot.validCard(hand[i].entityId)){
-                        console.debug("ifglowimagestart")
                         hand[i].glowImage.visible=  true
-                        console.debug("ifglowimageend")
                         hand[i].updateCardImage()
                     }else{
-                        console.debug("elseglowimagestart")
                         hand[i].glowImage.visible = false
-                        console.debug("elseglowimageend")
                         hand[i].saturation = -0.5
                         hand[i].lightness = 0.5
                     }
