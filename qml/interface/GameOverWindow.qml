@@ -43,7 +43,7 @@ Item {
       id: winnerText
       horizontalAlignment: Text.AlignHCenter
       anchors.horizontalCenter: parent.horizontalCenter
-      text: "The winner is <font color=\"#28a3c1\">" + winnerName + "</font>"
+      text: "The SHITHEAD is <font color=\"#28a3c1\">" + winnerName + "</font>"
       font.family: standardFont.name
       color: "black"
       font.pixelSize: 36

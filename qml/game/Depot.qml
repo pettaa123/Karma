@@ -11,13 +11,15 @@ Item {
     // last card under current
     property var last
     // checklast instead of actual
-    property var checkLast
+    property bool checkLast
     // block the player for a short period of time when he gets skipped
     property alias effectTimer: effectTimer
     // the current depot card effect for the next player
     property bool effect: false
     // whether the active player is skipped or not
     property bool skipped: false
+
+    property var multiple
 
 
     // sound effect plays when a player gets skipped
@@ -80,9 +82,6 @@ Item {
                 card.height= card.originalHeight*2/3
                 card.x=Math.floor((-2*card.originalWidth)+xOffset)
                 card.y=yOffset
-
-
-
             }
         }
         current=undefined
@@ -170,35 +169,43 @@ Item {
     // check if the selected card matches with the current reference card
     function validCard(cardId){
         // only continue if the selected card is in the hand of the active player
+
         for (var i = 0; i < playerHands.children.length; i++) {
             if (playerHands.children[i].player === multiplayer.activePlayer){
-                if (!playerHands.children[i].inHand(cardId))
-                    return false // shouldnt be reached
+                if (!playerHands.children[i].inHand(cardId)) return false // shouldnt be reached
             }
         }
+
         var card = entityManager.getEntityById(cardId)
 
         if (card.variationType=== "3") return true
         if (card.variationType=== "2") return true
         if (card.variationType=== "10") return true
 
+        console.debug("checkLast")
+        console.debug(checkLast)
+        console.debug("last")
+        console.debug(last)
+        console.debug("current")
+        console.debug(current)
 
         if (!current || (checkLast && !last)){
             return true
         }
-        console.debug("checkLast")
-        console.debug(checkLast)
+
         var toBeChecked = checkLast ? last : current
         //if to be checked is a 3 again, dig deeper
         while(toBeChecked.variationType ==="3"){
             for (var j=0;j<deck.cardDeck.length;j++){
                 var z= toBeChecked.z
+                console.debug("z")
+                console.debug(z)
                 if(deck.cardDeck[j].state==="depot" && (deck.cardDeck[j].z===z-1)){
                     toBeChecked=deck.cardDeck[j]
                     break
                 }
             }
-            if(toBeChecked.z==="0") break
+            if(toBeChecked.z===0) break
         }
 
 
@@ -210,6 +217,7 @@ Item {
 
         return false
     }
+
 
 
 
@@ -228,6 +236,7 @@ Item {
             // reset the card effects if they are not active
             skipped = false
             checkLast= false
+            multiple=false
         }
         console.debug("cardEffect ended")
     }
@@ -251,6 +260,9 @@ Item {
 
     // reset the depot
     function reset(){
+        current = undefined
+        last = undefined
+        checkLast = false
         skipped = false
         effect = false
         effectTimer.stop()

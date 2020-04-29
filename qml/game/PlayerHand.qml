@@ -119,7 +119,7 @@ Item {
             china.pop()
         }
         while(chinaHidden.length) {
-            china.pop()
+            chinaHidden.pop()
         }
         this.resetChinaAccessible()
         this.resetChinaHiddenAccessible()
@@ -343,9 +343,9 @@ Item {
                     chinaHidden[i].width = chinaHidden[i].originalWidth
                     chinaHidden[i].height = chinaHidden[i].originalHeight
                     chinaHidden.splice(i, 1)
+                    return
                 }
                 //neatHand()
-                return
             }
         }
     }
@@ -393,7 +393,20 @@ Item {
     // highlight all valid cards by setting the glowImage visible
     function markValid(){
         console.debug("PH mark Valid started")
+
         if (!depot.skipped && !gameLogic.gameOver){ //!done
+            // if there are no valids pick depot
+            console.debug("handLength:")
+            console.debug(hand.length)
+            if(!chinaHiddenAccessible){
+                var validIds = randomValidIds() //ai
+                if(validIds == null){
+                    //deck.markStack()
+                    //take depot
+                    console.debug("validIds == null")
+                    pickUpDepot()
+                }
+            }
             console.debug("chinaAccessible:")
             console.debug(chinaAccessible)
             if(chinaAccessible){
@@ -424,18 +437,6 @@ Item {
                         hand[i].saturation = -0.5
                         hand[i].lightness = 0.5
                     }
-                }
-            }
-            // mark the stack if there are no valid cards in hand
-            console.debug("handLength:")
-            console.debug(hand.length)
-            if(!chinaHiddenAccessible){
-                var validIds = randomValidIds() //ai
-                if(validIds == null){
-                    //deck.markStack()
-                    //take depot
-                    console.debug("validIds == null")
-                    pickUpDepot()
                 }
             }
         }
@@ -529,7 +530,7 @@ Item {
 
     // get a random valid card id from the playerHand
     function randomValidIds(){
-        console.debug("random valid started")
+        console.debug("random valids started")
         var validIds = []
         var valids = getValidCards()
         if (valids.length > 0){
@@ -609,8 +610,8 @@ Item {
     // calculate all card points in hand
     function points(){
         var points = 0
-        for (var i = 0; i < hand.length; i++) {
-            points += hand[i].points
+        if(hand.length<1){
+        points=10
         }
         return points
     }
