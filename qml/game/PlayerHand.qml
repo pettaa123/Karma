@@ -70,7 +70,8 @@ Item {
 
         onSourceChanged: {
             z = 0
-            neatHand()
+            //neatHand()
+            //neatChina()
         }
     }
 
@@ -123,14 +124,14 @@ Item {
         }
         this.resetChinaAccessible()
         this.resetChinaHiddenAccessible()
-        scaleHand(1.0)
+        //scaleHand(1.0)
         this.done=false
 
     }
 
     function neatChina(){
         offset = originalWidth * zoom / 10
-        console.debug("neat china")
+
 
         // calculate the card position and rotation in the hand and change the z order
         for (var i = 0; i < china.length; i ++){
@@ -145,7 +146,7 @@ Item {
             var cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
 
             card.rotation = cardAngle-28
-            card.y = -Math.cos(card.rotation)*1.5 -originalHeight/4
+            card.y = -Math.sin(Math.sin((cardAngle-28)*3.14/180))*card.height/1.1 -originalHeight/1.4
             card.x = cardX - originalWidth/3
             card.z = i -50 + playerHandImage.z
         }
@@ -162,15 +163,15 @@ Item {
             cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
 
             card.rotation = cardAngle-28
-            card.y = -Math.cos(card.rotation)*1.5 -originalHeight/4
+            card.y = card.y = -Math.sin(Math.sin((cardAngle-28)*3.14/180))*card.height/1.1 -originalHeight/1.4
             card.x = cardX - originalWidth/3
             card.z = i -100 + playerHandImage.z
         }
-        console.debug("neat china ended")
     }
 
     // organize the hand and spread the cards
     function neatHand(){
+        console.debug(this.player.userId)
         console.debug("neatHand")
         // sort all cards by their natural order
         if(hand.length >1){hand.sort(function(a, b) {
@@ -202,7 +203,7 @@ Item {
             card.x = cardX
             card.z = i +50 + playerHandImage.z
         }
-        console.debug("neatHand ended")
+
     }
 
     // pick up specified amount of cards
@@ -225,11 +226,6 @@ Item {
                 chinaHidden.push(pickUp[i])
             }
 
-            //reorganize china
-            neatChina()
-
-
-
             // add the stack cards to the playerHand array
             for (i = 6; i < pickUp.length; i ++){
                 hand.push(pickUp[i])
@@ -239,8 +235,6 @@ Item {
                 }
                 drawSound.play()
             }
-            // reorganize the hand
-            neatHand()
         }
 
         else{
@@ -392,23 +386,18 @@ Item {
 
     // highlight all valid cards by setting the glowImage visible
     function markValid(){
-        console.debug("PH mark Valid started")
 
         if (!depot.skipped && !gameLogic.gameOver){ //!done
             // if there are no valids pick depot
-            console.debug("handLength:")
-            console.debug(hand.length)
             if(!chinaHiddenAccessible){
                 var validIds = randomValidIds() //ai
                 if(validIds == null){
                     //deck.markStack()
                     //take depot
-                    console.debug("validIds == null")
                     pickUpDepot()
                 }
             }
-            console.debug("chinaAccessible:")
-            console.debug(chinaAccessible)
+
             if(chinaAccessible){
                 for (var i = 0; i < china.length; i ++){
                     if (depot.validCard(china[i].entityId)){
@@ -422,8 +411,6 @@ Item {
                 }
             }
             else{
-                console.debug("else handLength:")
-                console.debug(hand.length)
                 for (i = 0; i < hand.length; i ++){
                     if (depot.validCard(hand[i].entityId)){
                         hand[i].glowImage.visible=  true
@@ -436,15 +423,11 @@ Item {
                 }
             }
         }
-        console.debug("PH mark Valid ended")
     }
 
     // highlight all valid cards by setting the glowImage visible
     function markMultiples(cardId){
-        console.debug("PH mark Multiples started")
         if (!depot.skipped && !gameLogic.gameOver){ //!done
-            console.debug("chinaAccessible:")
-            console.debug(chinaAccessible)
             var card=entityManager.getEntityById(cardId)
             if(chinaAccessible){
                 for (var i = 0; i < china.length; i ++){
@@ -459,25 +442,18 @@ Item {
                 }
             }
             else{
-                console.debug("else handLength:")
-                console.debug(hand.length)
                 for (i = 0; i < hand.length; i ++){
                     if (hand[i].variationType===card.variationType){
-                        console.debug("ifglowimagestart")
                         hand[i].glowImage.visible=  true
-                        console.debug("ifglowimageend")
                         hand[i].updateCardImage()
                     }else{
-                        console.debug("elseglowimagestart")
                         hand[i].glowImage.visible = false
-                        console.debug("elseglowimageend")
                         hand[i].saturation = -0.5
                         hand[i].lightness = 0.5
                     }
                 }
             }
         }
-        console.debug("PH mark Multiples ended")
     }
 
 
@@ -526,7 +502,6 @@ Item {
 
     // get a random valid card id from the playerHand
     function randomValidIds(){
-        console.debug("random valids started")
         var validIds = []
         var valids = getValidCards()
         if (valids.length > 0){
@@ -575,9 +550,40 @@ Item {
         return valids
     }
 
+    function optimizeChina(){
+        var index=worstHandIndex()
+        for (var i=0;i<china.length;i++){
+            //exchangeWithBetterInHand
+            if(index===111) return
+            if(china[i].val>hand[index].val){
+                //exchange if china is better than hand
+                var temp=hand[index]
+                hand[index]=china[i]
+                hand[index].state="player"
+                china[i]=temp
+                china[i].state="china"
+                //update worst handindex after somethin changed
+                index=worstHandIndex()
+            }
+        }
+    }
+
+
+
+    //returns worst hand index if val is better
+    function worstHandIndex(){
+        var worst=13
+        var index=111
+        for(var i=0;i<hand.length;i++){
+            if (hand[i].val<worst){
+                worst=hand[i].val
+                index=i
+            }
+        }
+        return index
+    }
     // check if the player has zero cards left and stack is empty
     function activateChinaCheck(){
-        console.debug("activate china check")
         if (hand.length == 0 && deck.cardsInStack==0 && china.length >0){
             this.setChinaAccessible()
             return 0
@@ -607,7 +613,7 @@ Item {
     function points(){
         var points = 0
         if(hand.length<1){
-        points=10
+            points=10
         }
         return points
     }

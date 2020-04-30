@@ -220,9 +220,11 @@ Item {
             if (playerHands.children[i].player === multiplayer.activePlayer && !playerHands.children[i].done){
                 if (effect){
                     if (current && current.variationType === "8") {
+                        console.debug("SKIP")
                         skip()
                     }
                     if (current && current.variationType === "3") {
+                        console.debug("CHECKLAST TRUE")
                         checkLast=true
                     }
                 } else {
@@ -275,11 +277,6 @@ Item {
         depot.effect = effect
     }
 
-    // create the depot by placing a single stack card
-    function createDepot(){
-        depositCard(deck.getTopCardId())
-        deck.cardsInStack --
-    }
 
     // return a random number between two values
     function randomIntFromInterval(min,max)

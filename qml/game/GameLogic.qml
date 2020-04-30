@@ -13,12 +13,13 @@ Item {
     // do not set this too low, otherwise players with higher latency could run into problems as they get skipped by the leader
     property int userInterval: multiplayer.myTurn && !multiplayer.amLeader ? 7 : 10
     // turn time for AI players, in milliseconds
-    property int aiTurnTime: 600
+    property int aiTurnTime: 1200
     // restart the game at the end after a few seconds
     property int restartTime: 8000
     property bool acted: false
     property bool gameOver: false
     property bool again: false
+    property bool nullRound: true
 
     property int messageSyncGameState: 0
     property int messageRequestGameState: 1
@@ -313,13 +314,11 @@ Item {
                         var validIds=checkForMultiples(cardId)
                         acted = true
                         depositCard(cardId, multiplayer.localPlayer.userId)
-                        console.debug("just depositedCard")
-                        console.debug(cardId)
                         multiplayer.sendMessage(messageMoveCardsDepot, {cardId: cardId, userId: multiplayer.localPlayer.userId})
                         if(validIds && validIds.length>1){ //give the player the chance to select a second card
                             depot.multiple=entityManager.getEntityById(cardId).variationType
                             acted = false
-                            scaleHand()
+                            //scaleHand()
                             markMultiples(cardId)
 
                             if (multiplayer.activePlayer && multiplayer.activePlayer.connected){
@@ -422,7 +421,7 @@ Item {
         // unmark all highlighted cards
         unmark()
         // scale down the active localPlayer playerHand
-        scaleHand(1.0)
+        //scaleHand(1.0)
         for (var i = 0; i < playerHands.children.length; i++) {
             // find the playerHand for the active player
             // if the selected card is in the playerHand of the active player
@@ -462,8 +461,6 @@ Item {
                 if (validCardIds){
                     multiplayer.sendMessage(messageMoveCardsDepot, {cardIds: validCardIds, userId: userId})
                     depositCards(validCardIds, userId)
-                    console.debug("just depositedCard")
-                    console.debug(validCardIds[0])
                 } else {
                     multiplayer.sendMessage(messageMoveDepotToHand, {userId: userId})
                     takeDepot(userId)
@@ -486,9 +483,11 @@ Item {
         console.debug("startTurnTimer")
         timer.stop()
         remainingTime = userInterval
+        console.debug(gameOver)
+        console.debug(depot.skipped)
         if (!gameOver && !depot.skipped) {
             timer.start()
-            scaleHand()
+            //scaleHand()
             markValid()
         }
     }
@@ -604,8 +603,8 @@ Item {
         // reset all values at the start of the game
         gameOver = false
         timer.start()
-        scaleHand()
-        markValid()
+        //scaleHand()
+        //markValid()
         gameScene.gameOver.visible = false
         gameScene.leaveGame.visible = false
         gameScene.switchName.visible = false
@@ -803,6 +802,9 @@ Item {
             for (var i = 0; i < playerHands.children.length; i++) {
                 // start the hand for each player
                 playerHands.children[i].startHand(initialized)
+                playerHands.children[i].optimizeChina()
+                playerHands.children[i].neatHand()
+                playerHands.children[i].neatChina()
             }
         })
         console.debug("init hands ended")
@@ -872,7 +874,6 @@ Item {
 
     // find the playerHand of the active player and mark all valid card options
     function markValid(){
-        console.debug("GL markValid started")
         if (multiplayer.myTurn && !acted){
             for (var i = 0; i < playerHands.children.length; i++) {
                 if (playerHands.children[i].player === multiplayer.activePlayer){
@@ -882,18 +883,14 @@ Item {
         } else {
             unmark()
         }
-        console.debug("GL markValid ended")
     }
 
     // unmark all valid card options of all players
     function unmark(){
-        console.debug("GL unmark started")
         for (var i = 0; i < playerHands.children.length; i++) {
             playerHands.children[i].unmark()
         }
         // unmark the highlighted deck card
-        //deck.unmark()
-        console.debug("GL unmark ended")
     }
 
     // scale the playerHand of the active localPlayer

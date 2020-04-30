@@ -16,8 +16,8 @@ Item {
     // array with all card entities in the game
     property var cardDeck: []
     // all card types and colors
-    property var types: ["2", "3", "4", "5", "6",
-        "7", "8", "9","10", "11", "12", "13", "14"]
+    property var types: ["2", "3", "4", "5", "6","7", "8", "9","10", "11", "12", "13", "14"]
+    property var vals: [10,11,1,2,3,4,5,6,13,7,8,9,12]
     property var cardColor: ["karo", "herz", "pik", "kreuz"]
 
 
@@ -54,13 +54,14 @@ Item {
         for (var i = 0; i < 13; i ++){
             // one 2-Ass value cards per color
             for (var j = 0; j < 4; j ++){
-                card = {variationType: types[i], cardColor: cardColor[j], points: 1, hidden: true, order: order}
+                card = {variationType: types[i], cardColor: cardColor[j], points: 1, hidden: true, order: order, val: vals[i]}
                 cardInfo.push(card)
                 order ++
             }
         }
-
     }
+
+
 
     // create the card entities with the cardInfo array
     function printDeck(){
@@ -72,6 +73,7 @@ Item {
                             "variationType": cardInfo[i].variationType,
                             "cardColor": cardInfo[i].cardColor,
                             "points": cardInfo[i].points,
+                            "val": cardInfo[i].val,
                             "order": cardInfo[i].order,
                             "hidden": cardInfo[i].hidden,
                             "z": i,
