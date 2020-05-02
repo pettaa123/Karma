@@ -144,20 +144,6 @@ Item {
         }
     }
 
-    // mark the stack if there are no other valid card options
-    function markStack(){
-        if (cardDeck.length <= 0) return
-        var card = entityManager.getEntityById(getTopCardId())
-        card.glowImage.visible = true
-    }
-
-    // unmark the stack and removed
-    //function unmark(){
-    //    if (cardDeck.length <= 0) return
-    //    var card = entityManager.getEntityById(getTopCardId())
-    //    card.glowImage.visible = false
-    //}
-
     // move the stack cards to the beginning of the cardDeck array
     function moveElement(from, to){
         cardDeck.splice(to,0,cardDeck.splice(from,1)[0])

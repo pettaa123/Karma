@@ -19,7 +19,6 @@ Item {
     property bool acted: false
     property bool gameOver: false
     property bool again: false
-    property bool nullRound: true
 
     property int messageSyncGameState: 0
     property int messageRequestGameState: 1
@@ -37,6 +36,8 @@ Item {
 
     property int messageDrawDepot: 13
     property int messageMoveCardDepot: 14//REMOV
+    property int messageSetMultiple: 15
+    property int messageSetCheckLast: 16
 
     // gets set to true when a message is received before the game state got synced. in that case, request a new game state
     property bool receivedMessageBeforeGameStateInSync: false
@@ -160,7 +161,8 @@ Item {
                     syncPlayers()
                     initTags()
                     syncDeck(message.deck)
-                    depot.syncDepot(message.depot, message.current, message.skipped, message.effect)
+                    depot.syncDepot(message.depot,message.current,message.last ,message.multiple,message.skipped, message.effect, message.last,message.checkLast)
+                    depot.syncRemoved(message.removed)
                     syncHands(message.playerHands)
 
                     // join a game which is already over
@@ -241,6 +243,34 @@ Item {
 
                 depot.skipped = message.skipped
             }
+
+            // sync multiple state SHITHEAD
+            else if (code == messageSetMultiple){
+                // if the message wasn't sent by the leader and
+                // if it wasn't sent by the active player, the message is invalid
+                // the message was probably sent after the leader triggered the next turn
+                if (multiplayer.leaderPlayer.userId != message.userId &&
+                        multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
+                    return
+                }
+
+                depot.multiple = message.multiple
+            }
+
+            // sync skipped state
+            else if (code == messageSetCheckLast){
+                // if the message wasn't sent by the leader and
+                // if it wasn't sent by the active player, the message is invalid
+                // the message was probably sent after the leader triggered the next turn
+                if (multiplayer.leaderPlayer.userId != message.userId &&
+                        multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
+                    return
+                }
+
+                depot.checkLast = message.checkLast
+            }
+
+
 
             // game ends
             else if (code == messageEndGame){
@@ -377,10 +407,10 @@ Item {
     function syncDeck(cardInfo){
         console.debug("syncDeck()")
         deck.syncDeck(cardInfo)
-        // takes off 1st card
-        depot.createDepot()
 
         // reset all values at the start of the game
+        acted = false
+        again = false
         gameOver = false
         timer.start()
         scaleHand()
@@ -681,20 +711,33 @@ Item {
         // save the deck information to create an identical one
         message.deck = deck.cardInfo
         // sync the depot variables
-        message.current = depot.current.entityId
+        if(depot.current) message.current = depot.current.entityId
 
         message.skipped = depot.skipped
         message.effect = depot.effect
         message.gameOver = gameOver
+        message.again  =again
+
+        //SHITHEAD
+        if(depot.last) message.last = depot.last.entityId
+
+        message.checkLast = depot.checkLast
+        if(depot.multiple) message.multiple = depot.multiple.entityId
+
 
         // save all card ids of the current depot
         var depotIDs = []
+        var removedIDs = []
         for (var k = 0; k < deck.cardDeck.length; k++){
             if (deck.cardDeck[k].state === "depot" && deck.cardDeck[k].entityId !== depot.current.entityId){
                 depotIDs.push(deck.cardDeck[k].entityId)
             }
+            if (deck.cardDeck[k].state === "removed"){
+                removedIDs.push(deck.cardDeck[k].entityId)
+            }
         }
         message.depot = depotIDs
+        message.removed = removedIDs
 
         // send the message to the newly joined player
         message.receiverPlayerId = playerId

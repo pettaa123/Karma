@@ -11,18 +11,18 @@ Item {
     // last card under current
     property var last
     // checklast instead of actual
-    property bool checkLast
+    property bool checkLast : false
     // block the player for a short period of time when he gets skipped
     property alias effectTimer: effectTimer
     // the current depot card effect for the next player
     property bool effect: false
     // whether the active player is skipped or not
     property bool skipped: false
-
+    // holds temporary a card which was played second,third etc...
     property var multiple
 
 
-    // sound effect plays when a player gets skipped
+    // sound effect plays createDwhen a player gets skipped
     SoundEffect {
         volume: 0.5
         id: skipSound
@@ -51,41 +51,34 @@ Item {
         }
     }
 
-
-
-
-
-
     // put cards away if 10 was played
     function removeDepot(){
         for (var i = 0; i < deck.cardDeck.length; i ++){
             if(deck.cardDeck[i].state==="depot"){
-                console.debug(deck.cardDeck[i].entityId)
-                var card = entityManager.getEntityById(deck.cardDeck[i].entityId)
-                //card.newParent = removed
-                card.state = "removed"
-                card.glowImage.visible = false
-                // move the card to the depot and vary the position and rotation
-                card.hidden = true
-
-                // move the card to the depot and vary the position and rotation
-                var rotation = randomIntFromInterval(86, 94)
-                var xOffset = randomIntFromInterval(-4, 4)
-                var yOffset = randomIntFromInterval(-4, 4)
-
-                //var newWidth = Math.floor(card.originalWidth*2/3)
-                //var newHeight = Math.floor(card.originalHeight*2/3)
-
-                //card.resetGeometry()
-                card.rotation = rotation
-                card.width= card.originalWidth*2/3
-                card.height= card.originalHeight*2/3
-                card.x=Math.floor((-2*card.originalWidth)+xOffset)
-                card.y=yOffset
+                removeCard(deck.cardDeck[i].entityId)
             }
         }
         current=undefined
         last=undefined
+    }
+
+    function removeCard(id){
+        var card = entityManager.getEntityById(id)
+        card.state = "removed"
+        card.glowImage.visible = false
+        // move the card to the depot and vary the position and rotation
+        card.hidden = true
+
+        // move the card to the depot and vary the position and rotation
+        var rotation = randomIntFromInterval(86, 94)
+        var xOffset = randomIntFromInterval(-4, 4)
+        var yOffset = randomIntFromInterval(-4, 4)
+
+        card.rotation = rotation
+        card.width= card.originalWidth*2/3
+        card.height= card.originalHeight*2/3
+        card.x=Math.floor((-2*card.originalWidth)+xOffset)
+        card.y=yOffset
     }
 
 
@@ -226,12 +219,17 @@ Item {
                     if (current && current.variationType === "3") {
                         console.debug("CHECKLAST TRUE")
                         checkLast=true
+                        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                        multiplayer.sendMessage(gameLogic.messageSetCheckLast, {checkLast: true, userId: userId})
                     }
                 } else {
                     // reset the card effects if they are not active
                     skipped = false
                     checkLast= false
-                    multiple=false
+                    multiple=undefined
+                    var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                    multiplayer.sendMessage(gameLogic.messageSetCheckLast, {checkLast: false, userId: userId})
+                    multiplayer.sendMessage(gameLogic.messageSetMultiple, {multiple: undefined, userId: userId})
                 }
             }
         }
@@ -266,17 +264,31 @@ Item {
     }
 
     // sync the depot with the leader
-    function syncDepot(depotCardIDs, currentId, skipped, effect){
+    function syncDepot(depotCardIDs,currentId,lastId,multipleId, skipped, effect, checkLast){
         for (var i = 0; i < depotCardIDs.length; i++){
             depositCard(depotCardIDs[i])
             deck.cardsInStack --
         }
 
-        depositCard(currentId)
+        if(currentId) depositCard(currentId)
+
+
         depot.skipped = skipped
         depot.effect = effect
+
+        //SHITHEAD
+        depot.checkLast = checkLast? checkLast : false
+        depot.last= lastId? gentityManager.getEntityById(lastId):undefined
+        depot.multiple = multipleId? gentityManager.getEntityById(lastId):undefined
     }
 
+    // sync the depot with the leader
+    function syncRemoved(removedCardIDs){
+        for (var i = 0; i < removedCardIDs.length; i++){
+            removeCard(removedCardIDs[i])
+        }
+
+    }
 
     // return a random number between two values
     function randomIntFromInterval(min,max)

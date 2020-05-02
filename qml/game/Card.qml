@@ -17,7 +17,7 @@ EntityBase {
     // these properties are different for every card type
     variationType: ""
     property int points: 1
-    property string cardColor: ""
+    property string cardColor: "" //karo,herz,pik,kreuz only for image loading
     property int order
     property int val
 
@@ -174,7 +174,6 @@ EntityBase {
         if (hidden){
             cardImage.layer.enabled = false // deactivate coloring of card
             cardImage.source = "../../assets/img/cards/back.png"
-            // wild and wild4 cards use normal multicolor images without effect
             return
 
         }
