@@ -13,7 +13,7 @@ Item {
     // do not set this too low, otherwise players with higher latency could run into problems as they get skipped by the leader
     property int userInterval: multiplayer.myTurn && !multiplayer.amLeader ? 7 : 10
     // turn time for AI players, in milliseconds
-    property int aiTurnTime: 1200
+    property int aiTurnTime: 300000 //1200
     // restart the game at the end after a few seconds
     property int restartTime: 8000
     property bool acted: false
@@ -68,7 +68,7 @@ Item {
         id: timer
         repeat: true
         running: initialized
-        interval: 10000
+        interval: 120000//10000
 
         onTriggered: {
             remainingTime -= 1
@@ -400,8 +400,9 @@ Item {
                                     })
                                 }
                             }
+                            else{endTurn()}
                         }
-                        else{endTurn()}
+
                     }
                     else{
                         for (var i = 0; i < playerHands.children.length; i++) {
@@ -993,13 +994,14 @@ Item {
     // end the turn of the active player
     function endTurn(){
         //
-        depot.multiple=undefined
+        depot.multiple=undefined//is it necessary, cause it is also in hasEffect
+        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+        multiplayer.sendMessage(messageSetMultiple, {multiple: undefined, userId: multipl})
         // unmark all highlighted valid card options
         unmark()
         // scale down the hand of the active local player
         scaleHand(1.0)
         again=false
-        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
         //check if the active player has won the game
         // refill cards
         for (var i = 0; i < playerHands.children.length; i++) {
