@@ -996,7 +996,7 @@ Item {
         //
         depot.multiple=undefined//is it necessary, cause it is also in hasEffect
         var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-        multiplayer.sendMessage(messageSetMultiple, {multiple: undefined, userId: multipl})
+        multiplayer.sendMessage(messageSetMultiple, {multiple: undefined, userId: userId})
         // unmark all highlighted valid card options
         unmark()
         // scale down the hand of the active local player
