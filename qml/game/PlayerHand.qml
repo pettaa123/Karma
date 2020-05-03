@@ -171,8 +171,6 @@ Item {
 
     // organize the hand and spread the cards
     function neatHand(){
-        console.debug(this.player.userId)
-        console.debug("neatHand")
         // sort all cards by their natural order
         if(hand.length >1){hand.sort(function(a, b) {
             return a.order - b.order
@@ -276,7 +274,7 @@ Item {
 
 
     // change the current hand card array
-    function syncHand(cardIDs) {
+    function syncHand(cardIDs,chinaIDs,chinaHiddenIDs) {
         hand = []
         for (var i = 0; i < cardIDs.length; i++){
             var tmpCard = entityManager.getEntityById(cardIDs[i])
@@ -288,8 +286,35 @@ Item {
             }
             drawSound.play()
         }
+        for (var i = 0; i < chinaIDs.length; i++){
+            var tmpCard = entityManager.getEntityById(chinaIDs[i])
+
+            changeParent(tmpCard)
+            tmpCard.state = "china"
+            china.push(tmpCard)
+
+            deck.cardsInStack --
+            if (multiplayer.localPlayer == player){
+                tmpCard.hidden = false
+            }
+            drawSound.play()
+        }
+        for (var i = 0; i < chinaHiddenIDs.length; i++){
+            var tmpCard = entityManager.getEntityById(chinaIDs[i])
+
+            changeParent(tmpCard)
+            tmpCard.state = "chinaHidden"
+            china.push(tmpCard)
+
+            deck.cardsInStack --
+            if (multiplayer.localPlayer == player){
+                tmpCard.hidden = false
+            }
+            drawSound.play()
+        }
         // reorganize the hand
         neatHand()
+        neatChina()
     }
 
     // change the parent of the card to playerHand

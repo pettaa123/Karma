@@ -66,7 +66,7 @@ Item {
         var card = entityManager.getEntityById(id)
         card.state = "removed"
         card.glowImage.visible = false
-        // move the card to the depot and vary the position and rotation
+        // move the card to the removed place and vary the position and rotation
         card.hidden = true
 
         // move the card to the depot and vary the position and rotation
