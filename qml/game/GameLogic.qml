@@ -55,6 +55,7 @@ Item {
         repeat: false
         interval: 4000
         onTriggered: {
+            console.debug("WAITINPUTTIMER TRIGGERED")
             waitInputTimer.stop()
             var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
 
