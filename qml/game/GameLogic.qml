@@ -57,7 +57,6 @@ Item {
         onTriggered: {
             console.debug("WAITINPUTTIMER TRIGGERED")
             waitInputTimer.stop()
-            var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
 
             console.debug("<<<< Trigger new turn if player doesnt pick another card")
             endTurn()
@@ -1023,8 +1022,8 @@ Item {
                         acted=false
                         turnStarted(multiplayer.activePlayer)
                     }
-                    else{console.debug("Player DONE")}
                 }
+                else{console.debug("Player DONE")}
             }
             if (!again){
                 var refillNumber = playerHands.children[i].activateChinaCheck()
