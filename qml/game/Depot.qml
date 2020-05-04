@@ -272,7 +272,6 @@ Item {
 
         if(currentId) depositCard(currentId)
 
-
         depot.skipped = skipped
         depot.effect = effect
 

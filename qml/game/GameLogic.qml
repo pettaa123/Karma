@@ -163,7 +163,7 @@ Item {
                     syncPlayers()
                     initTags()
                     syncDeck(message.deck)
-                    depot.syncDepot(message.depot,message.current,message.last ,message.multiple,message.skipped, message.effect, message.last,message.checkLast)
+                    depot.syncDepot(message.depot,message.current,message.last ,message.multiple,message.skipped, message.effect,message.checkLast)
                     depot.syncRemoved(message.removed)
                     syncHands(message.playerHands)
 
@@ -374,6 +374,8 @@ Item {
 
         // the player selected a card
         onCardSelected: {
+            var test=entityManager.getEntityById(cardId)
+
             if (depot.multiple){
                 if(entityManager.getEntityById(cardId).variationType !== depot.multiple) return
             }
@@ -467,6 +469,8 @@ Item {
         gameScene.switchName.visible = false
         playerInfoPopup.visible = false
         chat.reset()
+        console.debug("TOPCARDID")
+        console.debug(deck.getTopCardId())
     }
 
     // deposit the selected cards
@@ -591,8 +595,6 @@ Item {
         // start the timer,scale hand and markvalid //WHY THE HELL MARK
 
         // check if the current card has an effect for the active player
-
-
 
         // the player didn't act yet
         acted = false
@@ -747,7 +749,7 @@ Item {
             for (var j = 0; j < playerHands.children[i].china.length; j++){
                 currentPlayerHand.chinaIds[j] = playerHands.children[i].china[j].entityId
             }
-            for (var j = 0; j < playerHands.children[i].china.length; j++){
+            for (var j = 0; j < playerHands.children[i].chinaHidden.length; j++){
                 currentPlayerHand.chinaHiddenIds[j] = playerHands.children[i].chinaHidden[j].entityId
             }
             // add the hand information of a single player
@@ -763,10 +765,12 @@ Item {
         message.skipped = depot.skipped
         message.effect = depot.effect
         message.gameOver = gameOver
-        message.again  =again
+
 
         //SHITHEAD
         if(depot.last) message.last = depot.last.entityId
+
+        message.again  =again
 
         message.checkLast = depot.checkLast
         if(depot.multiple) message.multiple = depot.multiple.entityId

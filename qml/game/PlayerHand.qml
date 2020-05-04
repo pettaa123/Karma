@@ -304,7 +304,7 @@ Item {
 
             changeParent(tmpCard)
             tmpCard.state = "chinaHidden"
-            china.push(tmpCard)
+            chinaHidden.push(tmpCard)
 
             deck.cardsInStack --
             if (multiplayer.localPlayer == player){

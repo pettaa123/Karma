@@ -130,7 +130,6 @@ Item {
     // get the id of the card on top of the stack
     function getTopCardId(){
         // create a new stack from depot cards if there's no card left to draw
-        //reStack()
         var index = Math.max(cardDeck.length - (cardDeck.length - cardsInStack) - 1, 0)
         return deck.cardDeck[index].entityId
     }
