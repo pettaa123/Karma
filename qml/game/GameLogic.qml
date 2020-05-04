@@ -141,6 +141,8 @@ Item {
             console.debug("onMessageReceived with code", code, "initialized:", initialized)
             // not relevant for google analytics, causes to exceed the free limit
 
+            var tempMessage=message
+
             if(!initialized && code !== messageSyncGameState) {
                 console.debug("ERROR: received message before gameState was synced and user is not initialized:", code, message)
 
@@ -218,7 +220,7 @@ Item {
                     return
                 }
 
-                removeDepot()
+                depot.removeDepot()
             }
 
             // move card to depot
@@ -342,14 +344,14 @@ Item {
             else if (code == messageTriggerTurn){
                 multiplayer.leaderCode(function() {
                     // the leader only stops the turn early if the requesting user is still the active player
-                    if (multiplayer.activePlayer && multiplayer.activePlayer.userId == message){
+                    if (multiplayer.activePlayer && multiplayer.activePlayer.userId == tempMessage){
                         multiplayer.triggerNextTurn()
                     }
                     // if the requesting user is no longer active, it means that he timed out according to the leader
                     // his last action happened after his turn and is therefore invalid
                     // the leader has to send the user a new game state
                     else {
-                        sendGameStateToPlayer(message)
+                        sendGameStateToPlayer(tempMessage)
                     }
                 })
             }
