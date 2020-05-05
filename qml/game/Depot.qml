@@ -228,7 +228,7 @@ Item {
         }
     }
 
-    // reset the depot
+    // reset the depot            var test=entityManager.getEntityById(cardId)
     function reset(){
         current = undefined
         last = undefined

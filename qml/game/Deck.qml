@@ -19,7 +19,7 @@ Item {
     property var types: ["2", "3", "4", "5", "6","7", "8", "9","10", "11", "12", "13", "14"]
     property var vals: [10,11,1,2,3,4,5,6,13,7,8,9,12]
     property var cardColor: ["karo", "herz", "pik", "kreuz"]
-
+            var test=entityManager.getEntityById(cardId)
 
     // shuffle sound in the beginning of the game
     SoundEffect {

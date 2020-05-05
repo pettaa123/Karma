@@ -362,8 +362,6 @@ Item {
 
         // the player selected a card
         onCardSelected: {
-            var test=entityManager.getEntityById(cardId)
-
 
             if (depot.multiple){
                 if(entityManager.getEntityById(cardId).variationType !== depot.multiple) return
