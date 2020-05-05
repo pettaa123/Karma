@@ -13,7 +13,7 @@ Item {
     // do not set this too low, otherwise players with higher latency could run into problems as they get skipped by the leader
     property int userInterval: multiplayer.myTurn && !multiplayer.amLeader ? 7 : 10
     // turn time for AI players, in milliseconds
-    property int aiTurnTime: 10000 //1200
+    property int aiTurnTime: 5000 //1200
     // restart the game at the end after a few seconds
     property int restartTime: 8000
     property bool acted: false
@@ -68,7 +68,7 @@ Item {
         id: timer
         repeat: true
         running: initialized
-        interval: 120000//10000
+        interval: 10000
 
         onTriggered: {
             remainingTime -= 1
@@ -163,7 +163,7 @@ Item {
                     syncPlayers()
                     initTags()
                     syncDeck(message.deck)
-                    depot.syncDepot(message.depot,message.current,message.last ,message.multiple,message.skipped, message.effect,message.checkLast)
+                    depot.syncDepot(message.depot,message.current,message.last ,message.multiple,message.skipped,message.checkLast)
                     depot.syncRemoved(message.removed)
                     syncHands(message.playerHands)
 
@@ -262,18 +262,6 @@ Item {
                 }
 
                 depositCards(message.cardIds, message.userId)
-            }
-            // lasting card effect
-            else if (code == messageSetEffect){
-                // if the message wasn't sent by the leader and
-                // if it wasn't sent by the active player, the message is invalid
-                // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.leaderPlayer.userId != message.userId &&
-                        multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
-                    return
-                }
-
-                depot.effect = message.effect
             }
             // sync skipped state
             else if (code == messageSetSkipped){
@@ -376,6 +364,7 @@ Item {
         onCardSelected: {
             var test=entityManager.getEntityById(cardId)
 
+
             if (depot.multiple){
                 if(entityManager.getEntityById(cardId).variationType !== depot.multiple) return
             }
@@ -469,8 +458,6 @@ Item {
         gameScene.switchName.visible = false
         playerInfoPopup.visible = false
         chat.reset()
-        console.debug("TOPCARDID")
-        console.debug(deck.getTopCardId())
     }
 
     // deposit the selected cards
@@ -534,9 +521,8 @@ Item {
                 depot.cardEffect()
                 //if chinaHidden dont mark valid, take a card and check if its valid, if not take depot and just chosen card
                 var validCardIds= playerHands.children[i].chinaHiddenAccessible? playerHands.children[i].checkFirstValid(): playerHands.children[i].randomValidIds()
-                if(validCardIds) {console.debug(validCardIds.length)}
-                var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
 
+                var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
                 // deposit the valid card or draw depot
                 if (validCardIds){
                     multiplayer.sendMessage(messageMoveCardsDepot, {cardIds: validCardIds, userId: userId})
@@ -763,7 +749,6 @@ Item {
         if(depot.current) message.current = depot.current.entityId
 
         message.skipped = depot.skipped
-        message.effect = depot.effect
         message.gameOver = gameOver
 
 

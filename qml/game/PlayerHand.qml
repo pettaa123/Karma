@@ -221,7 +221,8 @@ Item {
                 pickUp[i].newParent = playerHand
                 pickUp[i].state = "chinaHidden"
                 pickUp[i].hidden = true
-                chinaHidden.push(pickUp[i])
+                chinaHidden.push(pickUp[i])        //var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                //multiplayer.sendMessage(gameLogic.messageSetEffect, {effect: false, userId: userId})
             }
 
             // add the stack cards to the playerHand array
@@ -259,7 +260,6 @@ Item {
         }
         depot.current = undefined
         depot.last=undefined
-        depot.effect=false
         // add the depot cards to the playerHand array
         for (var i = 0; i < pickUp.length; i ++){
             hand.push(pickUp[i])
@@ -298,12 +298,12 @@ Item {
             drawSound.play()
         }
         for (var i = 0; i < chinaHiddenIDs.length; i++){
-            var tmpCard = entityManager.getEntityById(chinaIDs[i])
+            var tmpCard = entityManager.getEntityById(chinaHiddenIDs[i])
             changeParent(tmpCard)
             tmpCard.state = "chinaHidden"
             deck.cardsInStack --
             if (multiplayer.localPlayer == player){
-                tmpCard.hidden = false
+                tmpCard.hidden = true
             }
             chinaHidden.push(tmpCard)
             drawSound.play()

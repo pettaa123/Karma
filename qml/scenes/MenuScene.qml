@@ -213,7 +213,8 @@ SceneBase {
     anchors.bottomMargin: (community.height - communityButton.height) * (-1) + 10
 
     // community button to slide the community submenu in and out
-    ButtonBase {
+    ButtonBase {        //var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+        //multiplayer.sendMessage(gameLogic.messageSetEffect, {effect: false, userId: userId})
       id: communityButton
       color: "transparent"
       width: 38

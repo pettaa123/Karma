@@ -94,10 +94,6 @@ Item {
             handOut.push(cardDeck[index])
             cardsInStack --
         }
-        // deactivate card effects after drawing a card
-        //depot.effect = false
-        //var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-        //multiplayer.sendMessage(gameLogic.messageSetEffect, {effect: false, userId: userId})
         return handOut
     }
 
@@ -140,7 +136,7 @@ Item {
             //if (cardDeck[i].state == "stack"){
             //    cardDeck[i].y = i * (-0.1)
             if (cardDeck[i].state == "stack"){
-                cardDeck[i].x = i * (13)
+                cardDeck[i].x = i * (0.5)
             }
         }
     }

@@ -14,8 +14,6 @@ Item {
     property bool checkLast : false
     // block the player for a short period of time when he gets skipped
     property alias effectTimer: effectTimer
-    // the current depot card effect for the next player
-    property bool effect: false
     // whether the active player is skipped or not
     property bool skipped: false
     // holds temporary a card which was played second,third etc...
@@ -32,7 +30,7 @@ Item {
     // sound effect plays when a player gets skipped
     SoundEffect {
         volume: 0.5
-        id: reverseSound
+        id: reverseSoundde
         source: "../../assets/snd/reverse.wav"
     }
 
@@ -130,33 +128,12 @@ Item {
         // the deposited card is the current reference card
         last = current
         current = card
-
-        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-        // signal if the placed card has an effect on the next player
-        if(hasEffect()){
-            effect = true
-            multiplayer.sendMessage(gameLogic.messageSetEffect, {effect: true, userId: userId})
-        } else {
-            effect = false
-            multiplayer.sendMessage(gameLogic.messageSetEffect, {effect: false, userId: userId})
-        }
     }
 
     // change the card's parent to depot
     function changeParent(card){
         card.newParent = depot
         card.state = "depot"
-    }
-
-    // check if the card has an effect for the next player
-    function hasEffect(){
-        if (current.variationType === "8" ||
-                current.variationType === "3"){
-            return true
-        } //skip
-        else{
-            return false
-        }
     }
 
     // check if the selected card matches with the current reference card
@@ -208,21 +185,20 @@ Item {
 
     // play a card effect depending on the card type
     function cardEffect(){
-                console.debug("cardEffect started")
+        console.debug("cardEffect started")
         for (var i = 0; i < playerHands.children.length; i++) {
             if (playerHands.children[i].player === multiplayer.activePlayer && !playerHands.children[i].done){
-                if (effect){
-                    if (current && current.variationType === "8") {
-                        console.debug("SKIP")
-                        skip()
-                    }
-                    if (current && current.variationType === "3") {
-                        console.debug("CHECKLAST TRUE")
-                        checkLast=true
-                        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                        multiplayer.sendMessage(gameLogic.messageSetCheckLast, {checkLast: true, userId: userId})
-                    }
-                } else {
+                if (current && current.variationType === "8") {
+                    console.debug("SKIP")
+                    skip()
+                }
+                if (current && current.variationType === "3") {
+                    console.debug("CHECKLAST TRUE")
+                    checkLast=true
+                    var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                    multiplayer.sendMessage(gameLogic.messageSetCheckLast, {checkLast: true, userId: userId})
+                }
+                else {
                     // reset the card effects if they are not active
                     skipped = false
                     checkLast= false
@@ -241,7 +217,6 @@ Item {
     // skip the current player by playing a sound, setting the skipped variable and starting the skip timer
     function skip(){
         skipSound.play()
-        effect = false
         var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
         multiplayer.sendMessage(gameLogic.messageSetEffect, {effect: false, userId: userId})
         skipped = true
@@ -259,7 +234,6 @@ Item {
         last = undefined
         checkLast = false
         skipped = false
-        effect = false
         effectTimer.stop()
     }
 
