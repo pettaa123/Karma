@@ -13,7 +13,7 @@ Item {
     // do not set this too low, otherwise players with higher latency could run into problems as they get skipped by the leader
     property int userInterval: multiplayer.myTurn && !multiplayer.amLeader ? 7 : 10
     // turn time for AI players, in milliseconds
-    property int aiTurnTime: 300000 //1200
+    property int aiTurnTime: 10000 //1200
     // restart the game at the end after a few seconds
     property int restartTime: 8000
     property bool acted: false

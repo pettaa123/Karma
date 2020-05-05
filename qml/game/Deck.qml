@@ -137,8 +137,10 @@ Item {
     // reposition the remaining cards to create a stack
     function offsetStack(){
         for (var i = 0; i < cardDeck.length; i++){
+            //if (cardDeck[i].state == "stack"){
+            //    cardDeck[i].y = i * (-0.1)
             if (cardDeck[i].state == "stack"){
-                cardDeck[i].y = i * (-0.1)
+                cardDeck[i].x = i * (15)
             }
         }
     }
