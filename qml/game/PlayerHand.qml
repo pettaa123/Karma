@@ -163,7 +163,7 @@ Item {
             cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
 
             card.rotation = cardAngle-28
-            card.y = card.y = -Math.sin(Math.sin((cardAngle-28)*3.14/180))*card.height/1.1 -originalHeight/1.4
+            card.y = card.y = -Math.sin(Math.sin((cardAngle-28)*3.14/180))*card.height/1.1 -originalHeight/1.4 -50
             card.x = cardX - originalWidth/3
             card.z = i -100 + playerHandImage.z
         }
@@ -278,38 +278,34 @@ Item {
         hand = []
         for (var i = 0; i < cardIDs.length; i++){
             var tmpCard = entityManager.getEntityById(cardIDs[i])
-            hand.push(tmpCard)
             changeParent(tmpCard)
             deck.cardsInStack --
             if (multiplayer.localPlayer == player){
                 tmpCard.hidden = false
             }
+            hand.push(tmpCard)
             drawSound.play()
         }
         for (var i = 0; i < chinaIDs.length; i++){
             var tmpCard = entityManager.getEntityById(chinaIDs[i])
-
             changeParent(tmpCard)
             tmpCard.state = "china"
-            china.push(tmpCard)
-
             deck.cardsInStack --
             if (multiplayer.localPlayer == player){
                 tmpCard.hidden = false
             }
+            china.push(tmpCard)
             drawSound.play()
         }
         for (var i = 0; i < chinaHiddenIDs.length; i++){
             var tmpCard = entityManager.getEntityById(chinaIDs[i])
-
             changeParent(tmpCard)
             tmpCard.state = "chinaHidden"
-            chinaHidden.push(tmpCard)
-
             deck.cardsInStack --
             if (multiplayer.localPlayer == player){
                 tmpCard.hidden = false
             }
+            chinaHidden.push(tmpCard)
             drawSound.play()
         }
         // reorganize the hand

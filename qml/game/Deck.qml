@@ -140,7 +140,7 @@ Item {
             //if (cardDeck[i].state == "stack"){
             //    cardDeck[i].y = i * (-0.1)
             if (cardDeck[i].state == "stack"){
-                cardDeck[i].x = i * (15)
+                cardDeck[i].x = i * (13)
             }
         }
     }
