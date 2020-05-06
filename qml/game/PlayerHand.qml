@@ -572,6 +572,11 @@ Item {
     }
 
     function optimizeChina(){
+        //for(var i =0;i<hand.length;i++)
+        //{
+        //    console.debug("hand before")
+        //    console.debug(hand[i].entityId)
+        //    console.debug(hand[i].hidden)}
         var index=worstHandIndex()
         for (var i=0;i<china.length;i++){
             //exchangeWithBetterInHand
@@ -579,14 +584,24 @@ Item {
             if(china[i].val>hand[index].val){
                 //exchange if china is better than hand
                 var temp=hand[index]
-                hand[index]=china[i]
-                hand[index].state="player"
-                china[i]=temp
-                china[i].state="china"
+
+                china[i].state ="player"
+                china[i].hidden= multiplayer.localPlayer == player? false:true
+                hand.splice(index,1,china[i])
+                temp.state ="china"
+                temp.hidden=false
+                china.splice(i,1,temp)
+
+
                 //update worst handindex after somethin changed
                 index=worstHandIndex()
             }
         }
+        for(var i =0;i<hand.length;i++)
+        {
+            console.debug("hand after")
+            console.debug(hand[i].entityId)
+            console.debug(hand[i].hidden)}
     }
 
 

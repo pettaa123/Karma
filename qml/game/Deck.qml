@@ -19,7 +19,6 @@ Item {
     property var types: ["2", "3", "4", "5", "6","7", "8", "9","10", "11", "12", "13", "14"]
     property var vals: [10,11,1,2,3,4,5,6,13,7,8,9,12]
     property var cardColor: ["karo", "herz", "pik", "kreuz"]
-            var test=entityManager.getEntityById(cardId)
 
     // shuffle sound in the beginning of the game
     SoundEffect {
@@ -133,10 +132,8 @@ Item {
     // reposition the remaining cards to create a stack
     function offsetStack(){
         for (var i = 0; i < cardDeck.length; i++){
-            //if (cardDeck[i].state == "stack"){
-            //    cardDeck[i].y = i * (-0.1)
             if (cardDeck[i].state == "stack"){
-                cardDeck[i].x = i * (0.5)
+                cardDeck[i].x = i * (-0.2)
             }
         }
     }

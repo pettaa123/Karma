@@ -864,17 +864,13 @@ Item {
 
     // the leader creates the deck and depot
     function initDeck(){
-        console.debug("init decks started")
         multiplayer.leaderCode(function () {
             deck.createDeck()
-            //depot.createDepot()
         })
-        console.debug("init decks ended")
     }
 
     // the leader hands out the cards to the other players
     function initHands(){
-        console.debug("init hands started")
         multiplayer.leaderCode(function () {
             for (var i = 0; i < playerHands.children.length; i++) {
                 // start the hand for each player
@@ -884,7 +880,6 @@ Item {
                 playerHands.children[i].neatChina()
             }
         })
-        console.debug("init hands ended")
     }
 
     // sync all hands according to the leader
