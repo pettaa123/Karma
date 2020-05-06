@@ -620,11 +620,11 @@ Item {
     }
     // check if the player has zero cards left and stack is empty
     function activateChinaCheck(){
-        if (hand.length == 0 && deck.cardsInStack==0 && china.length >0){
+        if (this.hand.length == 0 && deck.cardsInStack==0 && china.length >0){
             this.setChinaAccessible()
             return 0
         }
-        if (hand.length ==0 && china.length == 0 && chinaHidden.length >0){
+        if (this.hand.length ==0 && china.length == 0 && chinaHidden.length >0){
             this.setChinaHiddenAccessible()
             this.resetChinaAccessible()
             return 0

@@ -233,7 +233,6 @@ Item {
                     })
                     return
                 }
-
                 takeDepot(message.userId)
             }
 
@@ -402,8 +401,9 @@ Item {
                             if (playerHands.children[i].inHand(cardId) && playerHands.children[i].hand.length===0
                                     && playerHands.children[i].china.length===0){//check if valid also
                                 playerHands.children[i].moveFromChinaHiddenToHand(cardId)
-                                playerHands.children[i].pickUpDepot()
-                                scaleHand()
+                                var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                                takeDepot(userId)
+                                multiplayer.sendMessage(messageMoveDepotToHand, {userId: userId})
                                 endTurn()
                             }
                         }

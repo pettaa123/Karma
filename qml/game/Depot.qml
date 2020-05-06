@@ -217,8 +217,6 @@ Item {
     // skip the current player by playing a sound, setting the skipped variable and starting the skip timer
     function skip(){
         skipSound.play()
-        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-        multiplayer.sendMessage(gameLogic.messageSetEffect, {effect: false, userId: userId})
         skipped = true
 
         if (multiplayer.activePlayer && multiplayer.activePlayer.connected){
@@ -238,7 +236,7 @@ Item {
     }
 
     // sync the depot with the leader
-    function syncDepot(depotCardIDs,currentId,lastId,multipleId, skipped, effect, checkLast){
+    function syncDepot(depotCardIDs,currentId,lastId,multipleId, skipped, checkLast){
         for (var i = 0; i < depotCardIDs.length; i++){
             depositCard(depotCardIDs[i])
             deck.cardsInStack --
@@ -247,7 +245,6 @@ Item {
         if(currentId) depositCard(currentId)
 
         depot.skipped = skipped
-        depot.effect = effect
 
         //SHITHEAD
         depot.checkLast = checkLast? checkLast : false
