@@ -68,7 +68,7 @@ Item {
         id: timer
         repeat: true
         running: initialized
-        interval: 10000
+        interval: 1000
 
         onTriggered: {
             remainingTime -= 1
@@ -401,9 +401,8 @@ Item {
                             if (playerHands.children[i].inHand(cardId) && playerHands.children[i].hand.length===0
                                     && playerHands.children[i].china.length===0){//check if valid also
                                 playerHands.children[i].moveFromChinaHiddenToHand(cardId)
-                                var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                                takeDepot(userId)
-                                multiplayer.sendMessage(messageMoveDepotToHand, {userId: userId})
+                                takeDepot(multiplayer.localPlayer.userId)
+                                multiplayer.sendMessage(messageMoveDepotToHand, multiplayer.localPlayer.userId)
                                 endTurn()
                             }
                         }
@@ -526,8 +525,9 @@ Item {
                     multiplayer.sendMessage(messageMoveCardsDepot, {cardIds: validCardIds, userId: userId})
                     depositCards(validCardIds, userId)
                 } else {
-                    takeDepot(userId)
                     multiplayer.sendMessage(messageMoveDepotToHand, {userId: userId})
+                    takeDepot(userId)
+
                 }
             }
         }
