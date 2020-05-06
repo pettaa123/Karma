@@ -38,7 +38,8 @@ Item {
     property int messageSetMultiple: 14
     property int messageSetCheckLast: 15
     property int messageRemoveDepot: 16
-
+    property int messageResetCurrent: 17
+    property int messageResetLast: 18
     // gets set to true when a message is received before the game state got synced. in that case, request a new game state
     property bool receivedMessageBeforeGameStateInSync: false
 
@@ -301,7 +302,19 @@ Item {
                 depot.checkLast = message.checkLast
             }
 
+            //reset current and last card on depot after depot removal
+            else if (code == messageResetCurrentAndLast){
+                // if the message wasn't sent by the leader and
+                // if it wasn't sent by the active player, the message is invalid
+                // the message was probably sent after the leader triggered the next turn
+                if (multiplayer.leaderPlayer.userId != message.userId &&
+                        multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
+                    return
+                }
 
+                depot.current = undefined
+                depot.last = undefined
+            }
 
             // game ends
             else if (code == messageEndGame){
@@ -365,7 +378,6 @@ Item {
             if (depot.multiple){
                 if(entityManager.getEntityById(cardId).variationType !== depot.multiple) return
             }
-            entityManager.getEntityById(cardId).state === "chinaHidden"
             // deposit the valid card
             if (entityManager.getEntityById(cardId).state === "player" ||
                     entityManager.getEntityById(cardId).state === "china" ||
@@ -924,9 +936,11 @@ Item {
         for (var i = 0; i < playerHands.children.length; i++) {
             if (playerHands.children[i].player.userId === userId){
                 playerHands.children[i].pickUpDepot()
-                scaleHand()
             }
         }
+        depot.current   =undefined
+        depot.last      =undefined
+        multiplayer.sendMessage(gameLogic.messageResetCurrentAndLast, userId)
     }
 
     // find the playerHand of the active player and mark all valid card options
@@ -977,25 +991,23 @@ Item {
 
     // end the turn of the active player
     function endTurn(){
-        //
-        depot.multiple=undefined//is it necessary, cause it is also in hasEffect
-        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-        multiplayer.sendMessage(messageSetMultiple, {multiple: undefined, userId: userId})
         // unmark all highlighted valid card options
         unmark()
         // scale down the hand of the active local player
         scaleHand(1.0)
-        again=false
+
+        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
         //check if the active player has won the game
-        // refill cards
         for (var i = 0; i < playerHands.children.length; i++) {
             if (playerHands.children[i].player === multiplayer.activePlayer){
                 if(checkShithead()){
                     endGame()
                     multiplayer.sendMessage(messageEndGame, {userId: userId})
                 }
+                // refill cards
 
                 //if 10 was last card dont start turn for same player
+                again=false
                 if(depot.current){
                     if (depot.current.variationType === "10"){
                         depot.removeDepot()
@@ -1005,7 +1017,6 @@ Item {
                         turnStarted(multiplayer.activePlayer)
                     }
                 }
-                else{console.debug("Player DONE")}
             }
             if (!again){
                 var refillNumber = playerHands.children[i].activateChinaCheck()
@@ -1016,8 +1027,8 @@ Item {
                 }
             }
         }
-        //endGame()
-        //multiplayer.sendMessage(messageEndGame, {userId: userId})
+        depot.multiple=undefined//is it necessary, cause it is also in hasEffect
+        multiplayer.sendMessage(messageSetMultiple, {multiple: undefined, userId: userId})
 
         // continue if the game is still going
         if (!gameOver && !again){

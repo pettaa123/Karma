@@ -258,14 +258,14 @@ Item {
             resetChinaAccessible()
             resetChinaHiddenAccessible()
         }
-        depot.current = undefined
-        depot.last=undefined
+
         // add the depot cards to the playerHand array
         for (var i = 0; i < pickUp.length; i ++){
             hand.push(pickUp[i])
             changeParent(pickUp[i])
-            pickUp[i].hidden= multiplayer.localPlayer == player? false:true
-
+            if(multiplayer.localPlayer == player){
+                pickUp[i].hidden = false
+            }
             drawSound.play()
         }
         // reorganize the hand

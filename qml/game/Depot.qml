@@ -84,8 +84,10 @@ Item {
     function handOutDepot(){
         var handOut = []
         for (var i = 0; i < deck.cardDeck.length; i ++){
-            if(deck.cardDeck[i].state==="depot")
+            if(deck.cardDeck[i].state==="depot"){
+                deck.cardDeck[i].hidden=true
                 handOut.push(deck.cardDeck[i])
+            }
         }
         var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
         multiplayer.sendMessage(gameLogic.messageDrawDepot, {userId: userId})
@@ -217,6 +219,7 @@ Item {
     // skip the current player by playing a sound, setting the skipped variable and starting the skip timer
     function skip(){
         skipSound.play()
+
         skipped = true
 
         if (multiplayer.activePlayer && multiplayer.activePlayer.connected){
