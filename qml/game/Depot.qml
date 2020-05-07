@@ -89,10 +89,6 @@ Item {
                 handOut.push(deck.cardDeck[i])
             }
         }
-        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-        multiplayer.sendMessage(gameLogic.messageDrawDepot, {userId: userId})
-
-
         return handOut
     }
 

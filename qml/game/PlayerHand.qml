@@ -82,7 +82,7 @@ Item {
         source: "../../assets/img/Blocked.png"
         width: 170
         height: width
-        z: 100
+        z: 200
         visible: depot.skipped && multiplayer.activePlayer == player
         smooth: true
     }

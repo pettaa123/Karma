@@ -13,7 +13,7 @@ Item {
     // do not set this too low, otherwise players with higher latency could run into problems as they get skipped by the leader
     property int userInterval: multiplayer.myTurn && !multiplayer.amLeader ? 7 : 10
     // turn time for AI players, in milliseconds
-    property int aiTurnTime: 5000 //1200
+    property int aiTurnTime: 2500 //1200
     // restart the game at the end after a few seconds
     property int restartTime: 8000
     property bool acted: false
@@ -25,9 +25,7 @@ Item {
     property int messageMoveCardsHand: 2
     property int messageMoveDepotToHand: 3
     property int messageMoveCardDepot: 4
-    property int messageSetEffect: 5
     property int messageSetSkipped: 6
-    property int messageSetDrawAmount: 7
     property int messageEndGame: 8 // we could replace this custom message with the new endGame() function from multiplayer, custom end game message was sent before this functionality existed
     property int messagePrintChat: 9
     property int messageSetPlayerInfo: 10
@@ -38,8 +36,7 @@ Item {
     property int messageSetMultiple: 14
     property int messageSetCheckLast: 15
     property int messageRemoveDepot: 16
-    property int messageResetCurrent: 17
-    property int messageResetLast: 18
+    property int messageResetCurrentAndLast: 17
     // gets set to true when a message is received before the game state got synced. in that case, request a new game state
     property bool receivedMessageBeforeGameStateInSync: false
 
@@ -54,7 +51,7 @@ Item {
     Timer {
         id: waitInputTimer
         repeat: false
-        interval: 4000
+        interval: 3500
         onTriggered: {
             console.debug("WAITINPUTTIMER TRIGGERED")
             waitInputTimer.stop()
@@ -391,6 +388,7 @@ Item {
                         multiplayer.sendMessage(messageMoveCardDepot, {cardId: cardId, userId: multiplayer.localPlayer.userId})
                         if(validIds){
                             if(validIds.length>1){ //give the player the chance to select a second card
+
                                 depot.multiple=entityManager.getEntityById(cardId).variationType
                                 acted = false
                                 //scaleHand()
@@ -398,6 +396,8 @@ Item {
 
                                 if (multiplayer.activePlayer && multiplayer.activePlayer.connected){
                                     multiplayer.leaderCode(function() {
+                                        //restart turn timer, otherwise ending turn time can lead to playing a card unintendeded
+                                        remainingTime=userInterval
                                         waitInputTimer.start()
                                     })
                                 }

@@ -6,13 +6,13 @@ import "../scenes"
 EntityBase {
     id: card
     entityType: "card"
-    width: 82
-    height: 134
+    width: 97
+    height: 152
     transformOrigin: Item.Bottom
 
     // original card size for zoom
-    property int originalWidth: 82
-    property int originalHeight: 134
+    property int originalWidth: 97
+    property int originalHeight: 152
 
     // these properties are different for every card type
     variationType: ""
