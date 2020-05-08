@@ -3,8 +3,8 @@ import Felgo 3.0
 
 Item {
     id: depot
-    width: 82
-    height: 134
+    width: 97
+    height: 152
 
     // current card on top of the depot for finding a match
     property var current
@@ -15,7 +15,7 @@ Item {
     // block the player for a short period of time when he gets skipped
     property alias effectTimer: effectTimer
     // whether the active player is skipped or not
-    property bool skipped: false
+    property bool skipped: true
     // holds temporary a card which was played second,third etc...
     property var multiple
 
@@ -41,10 +41,6 @@ Item {
         interval: 3000
         onTriggered: {
             effectTimer.stop()
-            skipped = false
-            var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-            multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: false, userId: userId})
-            console.debug("<<<< Trigger new turn after effect")
             multiplayer.triggerNextTurn()
         }
     }
@@ -56,6 +52,7 @@ Item {
                 removeCard(deck.cardDeck[i].entityId)
             }
         }
+        checkLast=false
         current=undefined
         last=undefined
     }
@@ -98,10 +95,7 @@ Item {
         // change the parent of the card to depot
         changeParent(card)
         // uncover card right away if the player is connected
-        // used for wild and wild4 cards
         // activePlayer might be undefined here, when initially synced
-        console.debug(multiplayer.activeplayer)
-        console.debug(multiplayer.activePlayer.connected)
         if (!multiplayer.activePlayer || multiplayer.activePlayer.connected){
             card.hidden = false
         }
@@ -183,31 +177,30 @@ Item {
 
     // play a card effect depending on the card type
     function cardEffect(){
-        console.debug("cardEffect started")
         for (var i = 0; i < playerHands.children.length; i++) {
-            if (playerHands.children[i].player === multiplayer.activePlayer && !playerHands.children[i].done){
-                if (current && current.variationType === "8") {
-                    console.debug("SKIP")
-                    skip()
-                }
-                if (current && current.variationType === "3") {
-                    console.debug("CHECKLAST TRUE")
-                    checkLast=true
-                    var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                    multiplayer.sendMessage(gameLogic.messageSetCheckLast, {checkLast: true, userId: userId})
-                }
-                else {
-                    // reset the card effects if they are not active
-                    skipped = false
-                    checkLast= false
-                    multiple=undefined
-                    var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                    multiplayer.sendMessage(gameLogic.messageSetCheckLast, {checkLast: false, userId: userId})
-                    multiplayer.sendMessage(gameLogic.messageSetMultiple, {multiple: undefined, userId: userId})
+            if (playerHands.children[i].player === multiplayer.activePlayer){
+                if (current){
+                    checkLast=false
+                    if (current.variationType === "3"){
+                        checkLast=true
+                        return false
+                    }
+                    if (current.variationType === "8" && skipped==true){
+                        skip()
+                        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                        multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: false, userId: userId})
+                        skipped = false
+                        return true
+                    }
+                    else if(current.variationType === "8" && skipped==false){
+                        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                        multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: true, userId: userId})
+                        skipped=true
+                        return false
+                    }
                 }
             }
         }
-        console.debug("cardEffect ended")
     }
 
 
@@ -215,14 +208,7 @@ Item {
     // skip the current player by playing a sound, setting the skipped variable and starting the skip timer
     function skip(){
         skipSound.play()
-
-        skipped = true
-
-        if (multiplayer.activePlayer && multiplayer.activePlayer.connected){
-            multiplayer.leaderCode(function() {
-                effectTimer.start()
-            })
-        }
+        effectTimer.start()
     }
 
     // reset the depot            var test=entityManager.getEntityById(cardId)
@@ -230,7 +216,7 @@ Item {
         current = undefined
         last = undefined
         checkLast = false
-        skipped = false
+        skipped = true
         effectTimer.stop()
     }
 
@@ -247,8 +233,8 @@ Item {
 
         //SHITHEAD
         depot.checkLast = checkLast? checkLast : false
-        depot.last= lastId? gentityManager.getEntityById(lastId):undefined
-        depot.multiple = multipleId? gentityManager.getEntityById(lastId):undefined
+        depot.last= lastId? entityManager.getEntityById(lastId):undefined
+        depot.multiple = multipleId? entityManager.getEntityById(lastId):undefined
     }
 
     // sync the depot with the leader

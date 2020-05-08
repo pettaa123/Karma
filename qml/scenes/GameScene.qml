@@ -155,7 +155,6 @@ SceneBase {
       anchors.bottom: parent.bottom
       anchors.horizontalCenter: parent.horizontalCenter
       z: 100
-      chinaAccessible: false
     }
 
     PlayerHand {
@@ -164,7 +163,6 @@ SceneBase {
       anchors.leftMargin: -width/2 + height/2
       anchors.verticalCenter: parent.verticalCenter
       rotation: 90
-      chinaAccessible: false
     }
 
     PlayerHand {
@@ -172,7 +170,6 @@ SceneBase {
       anchors.top: parent.top
       anchors.horizontalCenter: parent.horizontalCenter
       rotation: 180
-      chinaAccessible: false
     }
 
     PlayerHand {
@@ -181,7 +178,6 @@ SceneBase {
       anchors.rightMargin: -width/2 + height/2
       anchors.verticalCenter: parent.verticalCenter
       rotation: 270
-      chinaAccessible: false
     }
   }
 

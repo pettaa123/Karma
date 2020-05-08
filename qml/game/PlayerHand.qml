@@ -70,8 +70,6 @@ Item {
 
         onSourceChanged: {
             z = 0
-            //neatHand()
-            //neatChina()
         }
     }
 
@@ -83,8 +81,15 @@ Item {
         width: 170
         height: width
         z: 200
-        visible: depot.skipped && multiplayer.activePlayer == player
+        visible: !depot.skipped && multiplayer.activePlayer == player
         smooth: true
+    }
+
+    function checkDone(){
+        if (this.chinaHidden.length===0 && this.china.length===0 && this.hand.length===0){
+            done=true
+        }
+        return false
     }
 
 
@@ -163,7 +168,7 @@ Item {
             cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
 
             card.rotation = cardAngle-28
-            card.y = card.y = -Math.sin(Math.sin((cardAngle-28)*3.14/180))*card.height/1.1 -originalHeight/1.4 -50
+            card.y = card.y = -Math.sin(Math.sin((cardAngle-28)*3.14/180))*card.height/1.1 -originalHeight/1.4
             card.x = cardX - originalWidth/3
             card.z = i -100 + playerHandImage.z
         }
@@ -269,6 +274,7 @@ Item {
             drawSound.play()
         }
         // reorganize the hand
+
         neatHand()
     }
 
@@ -349,15 +355,17 @@ Item {
                 if(chinaHidden[i].entityId === cardId){
 
                     // add the selected chinaHidden card to the playerHand array
-                    hand.push(chinaHidden[i])
-                    changeParent(chinaHidden[i])
                     if (multiplayer.localPlayer == player){
                         chinaHidden[i].hidden = false
                     }
+                    chinaHidden[i].state="player"
+                    // reorganize the hand
                     // reorganize the hand
                     chinaHidden[i].width = chinaHidden[i].originalWidth
                     chinaHidden[i].height = chinaHidden[i].originalHeight
+                    hand.push(chinaHidden[i])
                     chinaHidden.splice(i, 1)
+                    resetChinaHiddenAccessible()
                     return
                 }
                 //neatHand()
@@ -408,16 +416,7 @@ Item {
     // highlight all valid cards by setting the glowImage visible
     function markValid(){
 
-        if (!depot.skipped && !gameLogic.gameOver){ //!done
-            // if there are no valids pick depot
-            if(!chinaHiddenAccessible){
-                var validIds = randomValidIds() //ai
-                if(validIds == null){
-                    //deck.markStack()
-                    //take depot
-                    pickUpDepot()
-                }
-            }
+        if (depot.skipped && !gameLogic.gameOver){ //!done
 
             if(chinaAccessible){
                 for (var i = 0; i < china.length; i ++){
@@ -448,7 +447,7 @@ Item {
 
     // highlight all valid cards by setting the glowImage visible
     function markMultiples(cardId){
-        if (!depot.skipped && !gameLogic.gameOver){ //!done
+        if (depot.skipped && !gameLogic.gameOver){ //!done
             var card=entityManager.getEntityById(cardId)
             if(chinaAccessible){
                 for (var i = 0; i < china.length; i ++){
@@ -502,8 +501,10 @@ Item {
     // scale the whole playerHand of the active localPlayer with a zoom factor
     function scaleHand(scale){
         zoom = scale
-        playerHand.height = playerHand.originalHeight * zoom
-        playerHand.width = playerHand.originalWidth * zoom
+        if(!chinaAccessible && !chinaHiddenAccessible){
+            playerHand.height = playerHand.originalHeight * zoom
+            playerHand.width = playerHand.originalWidth * zoom
+        }
         for (var i = 0; i < hand.length; i ++){
             hand[i].width = hand[i].originalWidth * zoom
             hand[i].height = hand[i].originalHeight * zoom
@@ -518,7 +519,7 @@ Item {
         }
 
         neatHand()
-        neatChina()
+        //neatChina()
     }
 
     // get a random valid card id from the playerHand
@@ -534,8 +535,9 @@ Item {
                 }
             }
             return validIds
-        }else{
-            return null
+        }
+        else{
+            return undefined
         }
     }
 
@@ -546,8 +548,7 @@ Item {
             validIds.push(chinaHidden[0].entityId)
             return validIds
         }else{
-            moveFromChinaHiddenToHand(chinaHidden[0].entityId)
-            return null
+            return undefined
         }
     }
 
@@ -572,29 +573,24 @@ Item {
     }
 
     function optimizeChina(){
-        //for(var i =0;i<hand.length;i++)
-        //{
-        //    console.debug("hand before")
-        //    console.debug(hand[i].entityId)
-        //    console.debug(hand[i].hidden)}
-        var index=worstHandIndex()
-        for (var i=0;i<china.length;i++){
+        var index=worstChinaIndex()
+        for (var i=0;i<hand.length;i++){
             //exchangeWithBetterInHand
             if(index===111) return
-            if(china[i].val>hand[index].val){
+            if(hand[i].val>china[index].val){
                 //exchange if china is better than hand
-                var temp=hand[index]
+                var temp=china[index]
 
-                china[i].state ="player"
-                china[i].hidden= multiplayer.localPlayer == player? false:true
-                hand.splice(index,1,china[i])
-                temp.state ="china"
-                temp.hidden=false
-                china.splice(i,1,temp)
+                hand[i].state ="china"
+                hand[i].hidden= false
+                china.splice(index,1,hand[i])
+                temp.state ="player"
+                temp.hidden=multiplayer.localPlayer == player? false:true
+                hand.splice(i,1,temp)
 
 
                 //update worst handindex after somethin changed
-                index=worstHandIndex()
+                index=worstChinaIndex()
             }
         }
         for(var i =0;i<hand.length;i++)
@@ -607,12 +603,12 @@ Item {
 
 
     //returns worst hand index if val is better
-    function worstHandIndex(){
+    function worstChinaIndex(){
         var worst=13
         var index=111
-        for(var i=0;i<hand.length;i++){
-            if (hand[i].val<worst){
-                worst=hand[i].val
+        for(var i=0;i<china.length;i++){
+            if (china[i].val<worst){
+                worst=china[i].val
                 index=i
             }
         }
@@ -620,17 +616,22 @@ Item {
     }
     // check if the player has zero cards left and stack is empty
     function activateChinaCheck(){
-        if (this.hand.length == 0 && deck.cardsInStack==0 && china.length >0){
-            this.setChinaAccessible()
-            return 0
-        }
+
         if (this.hand.length ==0 && china.length == 0 && chinaHidden.length >0){
             this.setChinaHiddenAccessible()
             this.resetChinaAccessible()
             return 0
         }
-        if( chinaHidden.length == 0 && hand.length == 0){
-            this.done=true
+
+        if (this.hand.length == 0 && deck.cardsInStack==0 && china.length >0){
+            this.setChinaAccessible()
+            this.resetChinaHiddenAccessible()
+            return 0
+        }
+
+        if (this.hand.length != 0){
+            this.resetChinaAccessible()
+            this.resetChinaHiddenAccessible()
         }
         if (hand.length == 2 && deck.cardsInDeck!=0){
             return 1
@@ -641,7 +642,7 @@ Item {
         if (hand.length == 0 && deck.cardsInDeck!=0){
             return 3
         }
-        return 0
+        return 0 //hand.length==3
     }
 
 

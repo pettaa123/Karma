@@ -133,7 +133,8 @@ Item {
     function offsetStack(){
         for (var i = 0; i < cardDeck.length; i++){
             if (cardDeck[i].state == "stack"){
-                cardDeck[i].x = i * (-0.2)
+                cardDeck[i].x = i * (-1.5)
+                cardDeck[i].y = i * (-0.5)
             }
         }
     }
