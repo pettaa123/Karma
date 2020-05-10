@@ -192,6 +192,8 @@ Item {
                     }
                     if(current.variationType === "8" && skipped==false){
                         var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                        console.debug("cardEffect activePlayer userId:")
+                        console.debug(userId)
                         multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: true, userId: userId})
                         skip()
                         skipped=true
