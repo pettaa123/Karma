@@ -626,18 +626,26 @@ Item {
     // start the turn for the active player
     function turnStarted(playerId) {
 
-        gameLogic.startTurnTimer()
+
 
         console.debug("turnStarted() called")
         if(!multiplayer.activePlayer) {
             console.debug("ERROR: activePlayer not valid in turnStarted!")
             return
         }
+
+
         console.debug("multiplayer.activePlayer.userId: " + multiplayer.activePlayer.userId)
         console.debug("Turn started")
 
+        gameLogic.startTurnTimer()
+
         // check if the current card has an effect for the active player
         if(depot.cardEffect()) return
+
+
+        // the player didn't act yet
+        acted = false
 
         //check if done
         for (var i = 0; i < playerHands.children.length; i++) {
@@ -659,30 +667,30 @@ Item {
                         return
                     }
                 }
-
-                // the player didn't act yet
-                acted = false
-
-                // zoom in on the hand of the active local player
-                if (!depot.skipped && multiplayer.myTurn) scaleHand(1.6)
-                // mark the valid card options
-                markValid()
-
-
-                // repaint the timer circle
-                for (i = 0; i < playerTags.children.length; i++){
-                    playerTags.children[i].canvas.requestPaint()
-                }
-                // schedule AI to take over in 3 seconds in case the player is gone
-                multiplayer.leaderCode(function() {
-                    if (!multiplayer.activePlayer || !multiplayer.activePlayer.connected) {
-                        aiTimeOut.start()
-                    }
-                })
             }
         }
 
+
+        // zoom in on the hand of the active local player
+        if (!depot.skipped && multiplayer.myTurn) scaleHand(1.6)
+        // mark the valid card options
+        markValid()
+
+
+        // repaint the timer circle
+        for (i = 0; i < playerTags.children.length; i++){
+            playerTags.children[i].canvas.requestPaint()
+        }
+        // schedule AI to take over in 3 seconds in case the player is gone
+        multiplayer.leaderCode(function() {
+            if (!multiplayer.activePlayer || !multiplayer.activePlayer.connected) {
+                aiTimeOut.start()
+            }
+        })
     }
+
+
+
 
 
     // schedule AI to take over after 10 seconds if the connected player is inactive
