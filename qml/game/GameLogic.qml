@@ -219,7 +219,7 @@ Item {
             // send a new game state to the requesting user
             else if (code == messageRequestGameState){
                 multiplayer.leaderCode(function() {
-                    sendGameStateToPlayer(message)
+                    sendGameStateToPlayer(tempMessage)
                 })
             }
             // move card to hand
@@ -228,7 +228,7 @@ Item {
                 // the message was probably sent after the leader triggered the next turn
                 if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
                     multiplayer.leaderCode(function() {
-                        sendGameStateToPlayer(message.userId)
+                        sendGameStateToPlayer(tempMessage.userId)
                     })
                     return
                 }
@@ -241,7 +241,7 @@ Item {
                 // the message was probably sent after the leader triggered the next turn
                 if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
                     multiplayer.leaderCode(function() {
-                        sendGameStateToPlayer(message.userId)
+                        sendGameStateToPlayer(tempMessage.userId)
                     })
                     return
                 }
@@ -259,12 +259,10 @@ Item {
                 // the message was probably sent after the leader triggered the next turn
                 if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
                     multiplayer.leaderCode(function() {
-                        sendGameStateToPlayer(message.userId)
+                        sendGameStateToPlayer(tempMessage.userId)
                     })
                     return
                 }
-                console.debug("RESTART TIMER!!!!!!!!!!!BY:")
-                console.debug(message.inc)
                 remainingTime+=message.inc
             }
             // move cardId from chinaHidden to hand
@@ -273,7 +271,7 @@ Item {
                 // the message was probably sent after the leader triggered the next turn
                 if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
                     multiplayer.leaderCode(function() {
-                        sendGameStateToPlayer(message.userId)
+                        sendGameStateToPlayer(tempMessage.userId)
                     })
                     return
                 }
@@ -292,7 +290,7 @@ Item {
                 // the message was probably sent after the leader triggered the next turn
                 if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
                     multiplayer.leaderCode(function() {
-                        sendGameStateToPlayer(message.userId)
+                        sendGameStateToPlayer(tempMessage.userId)
                     })
                     return
                 }
@@ -305,7 +303,7 @@ Item {
                 // the message was probably sent after the leader triggered the next turn
                 if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
                     multiplayer.leaderCode(function() {
-                        sendGameStateToPlayer(message.userId)
+                        sendGameStateToPlayer(tempMessage.userId)
                     })
                     return
                 }
@@ -318,7 +316,7 @@ Item {
                 // the message was probably sent after the leader triggered the next turn
                 if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
                     multiplayer.leaderCode(function() {
-                        sendGameStateToPlayer(message.userId)
+                        sendGameStateToPlayer(tempMessage.userId)
                     })
                     return
                 }
@@ -414,7 +412,6 @@ Item {
                 if(entityManager.getEntityById(cardId).variationType !== depot.multiple) return
             }
 
-            var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
 
             if (entityManager.getEntityById(cardId).state === "player" ||
                     entityManager.getEntityById(cardId).state === "china" ||
@@ -425,6 +422,7 @@ Item {
                         var validIds=checkForMultiples(cardId)
                         acted = true
                         depositCard(cardId)
+                        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
                         multiplayer.sendMessage(messageMoveCardDepot, {cardId: cardId, userId: userId})
                         if(validIds){
                             if(validIds.length>1){ //give the player the chance to select a second card
@@ -466,7 +464,8 @@ Item {
                             playerHands.children[i].moveFromChinaHiddenToHand(cardId)
 
                             remainingTime+=waitTimerBeforeTakeDepot.interval/1000+1
-                            multiplayer.sendMessage(messageIncreaseRemainingTime, {inc: waitTimerBeforeTakeDepot.interval/1000+1, userId:multiplayer.localPlayer.userId})
+                            var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                            multiplayer.sendMessage(messageIncreaseRemainingTime, {inc: waitTimerBeforeTakeDepot.interval/1000+1, userId: userId})
                             multiplayer.sendMessage(messageMoveCardIdToHand, {cardId: cardId, userId: userId})
 
                             waitTimerBeforeTakeDepot.start()
