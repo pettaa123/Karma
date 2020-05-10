@@ -42,7 +42,7 @@ Item {
         onTriggered: {
             effectTimer.stop()
             var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-            multiplayer.triggerNextTurn(userId)
+            multiplayer.triggerNextTurn()
         }
     }
 
