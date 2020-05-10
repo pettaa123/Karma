@@ -81,7 +81,7 @@ Item {
         width: 170
         height: width
         z: 200
-        visible: !depot.skipped && multiplayer.activePlayer == player
+        visible: depot.skipped && multiplayer.activePlayer == player
         smooth: true
     }
 
@@ -416,7 +416,7 @@ Item {
     // highlight all valid cards by setting the glowImage visible
     function markValid(){
 
-        if (depot.skipped && !gameLogic.gameOver){ //!done
+        if (!depot.skipped && !gameLogic.gameOver){ //!done
 
             if(chinaAccessible){
                 for (var i = 0; i < china.length; i ++){
@@ -447,7 +447,7 @@ Item {
 
     // highlight all valid cards by setting the glowImage visible
     function markMultiples(cardId){
-        if (depot.skipped && !gameLogic.gameOver){ //!done
+        if (!depot.skipped && !gameLogic.gameOver){ //!done
             var card=entityManager.getEntityById(cardId)
             if(chinaAccessible){
                 for (var i = 0; i < china.length; i ++){
@@ -593,11 +593,6 @@ Item {
                 index=worstChinaIndex()
             }
         }
-        for(var i =0;i<hand.length;i++)
-        {
-            console.debug("hand after")
-            console.debug(hand[i].entityId)
-            console.debug(hand[i].hidden)}
     }
 
 

@@ -15,7 +15,7 @@ Item {
     // block the player for a short period of time when he gets skipped
     property alias effectTimer: effectTimer
     // whether the active player is skipped or not
-    property bool skipped: true
+    property bool skipped: false
     // holds temporary a card which was played second,third etc...
     property var multiple
 
@@ -53,8 +53,12 @@ Item {
             }
         }
         checkLast=false
-        current=undefined
+
+        //sync last
+        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+        multiplayer.sendMessage(gameLogic.messageResetCurrentAndLast, {userId: userId})
         last=undefined
+        current=undefined
     }
 
     function removeCard(id){
@@ -185,20 +189,23 @@ Item {
                         checkLast=true
                         return false
                     }
-                    if (current.variationType === "8" && skipped==true){
+                    if(current.variationType === "8" && skipped==false){
+                        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                        multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: true, userId: userId})
                         skip()
+                        skipped=true
+                        return true
+                    }
+                    else if (current.variationType === "8" && skipped==true){
                         var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
                         multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: false, userId: userId})
                         skipped = false
-                        return true
-                    }
-                    else if(current.variationType === "8" && skipped==false){
-                        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                        multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: true, userId: userId})
-                        skipped=true
                         return false
                     }
+
+                    return false
                 }
+                return false
             }
         }
     }
@@ -208,6 +215,9 @@ Item {
     // skip the current player by playing a sound, setting the skipped variable and starting the skip timer
     function skip(){
         skipSound.play()
+        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+        gameLogic.remainingTime+=effectTimer.interval/1000+1
+        multiplayer.sendMessage(gameLogic.messageIncreaseRemainingTime, {inc: effectTimer.interval/1000+1, userId: userId})
         effectTimer.start()
     }
 
@@ -216,7 +226,7 @@ Item {
         current = undefined
         last = undefined
         checkLast = false
-        skipped = true
+        skipped = false
         effectTimer.stop()
     }
 

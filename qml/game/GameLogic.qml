@@ -11,7 +11,7 @@ Item {
     property double remainingTime
     // turn time for the active player, in seconds
     // do not set this too low, otherwise players with higher latency could run into problems as they get skipped by the leader
-    property int userInterval: multiplayer.myTurn && !multiplayer.amLeader ? 7 : 10
+    property int userInterval: multiplayer.myTurn && !multiplayer.amLeader ? 14 : 20
     // turn time for AI players, in milliseconds
     property int aiTurnTime: 2000 //1200
     // restart the game at the end after a few seconds
@@ -32,14 +32,12 @@ Item {
     property int messageTriggerTurn: 9
     property int messageRequestPlayerTags: 10
 
-    property int messageMoveCardsDepot: 11 //AI
-    property int messageSetMultiple: 12
-    //property int messageSetCheckLast: 15
+    property int messageIncreaseRemainingTime:12
     property int messageRemoveDepot: 13
     property int messageResetCurrentAndLast: 14
-    property int messageSetLast: 15
     property int messageMoveCardIdToHand: 16
     property int messageSetDone: 17
+
     // gets set to true when a message is received before the game state got synced. in that case, request a new game state
     property bool receivedMessageBeforeGameStateInSync: false
 
@@ -79,7 +77,7 @@ Item {
     Timer {
         id: waitTimerBeforeTakeDepot
         repeat: false
-        interval: 2000
+        interval: 1000
         onTriggered: {
             waitTimerBeforeTakeDepot.stop()
             var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
@@ -109,13 +107,13 @@ Item {
                 playerTags.children[i].canvas.requestPaint()
             }
         }
+
     }
 
     // AI takes over after a few seconds if the player is not connected
     Timer {
         id: aiTimeOut
         interval: aiTurnTime
-        repeat:false
         onTriggered: {
             gameLogic.executeAIMove()
         }
@@ -256,6 +254,20 @@ Item {
                 }
             }
             // move cardId from chinaHidden to hand
+            else if (code ==  messageIncreaseRemainingTime){
+                // if there is an active player with a different userId, the message is invalid
+                // the message was probably sent after the leader triggered the next turn
+                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
+                    multiplayer.leaderCode(function() {
+                        sendGameStateToPlayer(message.userId)
+                    })
+                    return
+                }
+                console.debug("RESTART TIMER!!!!!!!!!!!BY:")
+                console.debug(message.inc)
+                remainingTime+=message.inc
+            }
+            // move cardId from chinaHidden to hand
             else if (code == messageSetDone){
                 // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
@@ -313,19 +325,6 @@ Item {
 
                 depositCard(message.cardId)
             }
-            // move card to depot AI
-            else if (code == messageMoveCardsDepot){
-                // if there is an active player with a different userId, the message is invalid
-                // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
-                    multiplayer.leaderCode(function() {
-                        sendGameStateToPlayer(message.userId)
-                    })
-                    return
-                }
-
-                depositCards(message.cardIds, message.userId)
-            }
             // sync skipped state
             else if (code == messageSetSkipped){
                 // if the message wasn't sent by the leader and
@@ -339,30 +338,6 @@ Item {
                 depot.skipped = message.skipped
             }
 
-            // sync multiple state SHITHEAD
-            else if (code == messageSetMultiple){
-                // if the message wasn't sent by the leader and
-                // if it wasn't sent by the active player, the message is invalid
-                // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.leaderPlayer.userId != message.userId &&
-                        multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
-                    return
-                }
-
-                depot.multiple = message.multiple
-            }
-
-            else if (code == messageSetLast){
-                // if the message wasn't sent by the leader and
-                // if it wasn't sent by the active player, the message is invalid
-                // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.leaderPlayer.userId != message.userId &&
-                        multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
-                    return
-                }
-
-                depot.last = message.last
-            }
             else if (code == messageResetCurrentAndLast){
                 // if the message wasn't sent by the leader and
                 // if it wasn't sent by the active player, the message is invalid
@@ -438,17 +413,19 @@ Item {
             if (depot.multiple){
                 if(entityManager.getEntityById(cardId).variationType !== depot.multiple) return
             }
-            // deposit the valid card
+
+            var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+
             if (entityManager.getEntityById(cardId).state === "player" ||
                     entityManager.getEntityById(cardId).state === "china" ||
                     entityManager.getEntityById(cardId).state === "chinaHidden") {
-                if (multiplayer.myTurn && depot.skipped && !acted) {
-
+                if (multiplayer.myTurn && !depot.skipped && !acted) {
+                    // deposit the valid card
                     if (depot.validCard(cardId)){
                         var validIds=checkForMultiples(cardId)
                         acted = true
                         depositCard(cardId)
-                        multiplayer.sendMessage(messageMoveCardDepot, {cardId: cardId, userId: multiplayer.localPlayer.userId})
+                        multiplayer.sendMessage(messageMoveCardDepot, {cardId: cardId, userId: userId})
                         if(validIds){
                             if(validIds.length>1){ //give the player the chance to select a second card
 
@@ -457,47 +434,49 @@ Item {
                                 //scaleHand()
                                 markMultiples(cardId)
 
-                                if (multiplayer.activePlayer && multiplayer.activePlayer.connected){
-                                    multiplayer.leaderCode(function() {
-                                        //restart turn timer, otherwise ending turn time can lead to playing a card unintendeded
-                                        remainingTime=userInterval
-                                        waitInputTimer.start()
-                                        return
-                                    })
-                                }
-                            }
-                            else{
-                                var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                                for(var i=0;i<playerHands.children.length;i++){
-                                    if (playerHands.children[i].player.userId===multiplayer.localPlayer.userId){
-                                        if(playerHands.children[i].checkDone()){
-                                            multiplayer.sendMessage(messageSetDone, {userId: userId})
-                                        }
+                                //if (multiplayer.activePlayer && multiplayer.activePlayer.connected){
+                                //    multiplayer.leaderCode(function() {
+                                //restart turn timer, otherwise ending turn time can lead to playing a card unintendeded
+                                remainingTime+=waitInputTimer.interval/1000+1
+                                multiplayer.sendMessage(messageIncreaseRemainingTime, {inc: waitInputTimer.interval/1000+1, userId:multiplayer.localPlayer.userId})
+                                waitInputTimer.start()
+                                return
+                                //})
+                            }else{ endTurn()}
+                        }
+                        else{
+                            for(var i=0;i<playerHands.children.length;i++){
+                                if (playerHands.children[i].player.userId===multiplayer.localPlayer.userId){
+                                    if(playerHands.children[i].checkDone()){
+                                        multiplayer.sendMessage(messageSetDone, {userId: userId})
                                     }
                                 }
-                                endTurn()
                             }
+                            endTurn()
                         }
                     }
-                    else{
-                        //handle invalid china hidden cards
-                        for (var i = 0; i < playerHands.children.length; i++) {
-                            // find the playerHand for the active player
-                            // if the selected card is in the playerHand of the active player
-                            if (playerHands.children[i].inHand(cardId) && playerHands.children[i].hand.length===0
-                                    && playerHands.children[i].china.length===0){//check if valid also
-                                playerHands.children[i].moveFromChinaHiddenToHand(cardId)
-                                var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                                multiplayer.sendMessage(messageMoveCardIdToHand, {cardId: cardId, userId: userId})
-                                remainingTime=userInterval
-                                waitTimerBeforeTakeDepot.start()
-                            }
+                }
+                else{
+                    //handle invalid china hidden cards
+                    for (var i = 0; i < playerHands.children.length; i++) {
+                        // find the playerHand for the active player
+                        // if the selected card is in the playerHand of the active player
+                        if (playerHands.children[i].inHand(cardId) && playerHands.children[i].hand.length===0
+                                && playerHands.children[i].china.length===0){//check if valid also
+                            playerHands.children[i].moveFromChinaHiddenToHand(cardId)
+
+                            remainingTime+=waitTimerBeforeTakeDepot.interval/1000+1
+                            multiplayer.sendMessage(messageIncreaseRemainingTime, {inc: waitTimerBeforeTakeDepot.interval/1000+1, userId:multiplayer.localPlayer.userId})
+                            multiplayer.sendMessage(messageMoveCardIdToHand, {cardId: cardId, userId: userId})
+
+                            waitTimerBeforeTakeDepot.start()
                         }
                     }
                 }
             }
         }
     }
+
 
     function checkForMultiples(cardId){
         var validIds = []
@@ -579,6 +558,8 @@ Item {
             if (playerHands.children[i].inHand(cardId)){
                 // remove and deposit the card
                 playerHands.children[i].removeFromHand(cardId)
+                var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                multiplayer.sendMessage(messageMoveCardDepot, {cardId: cardId, userId: userId})
                 depot.depositCard(cardId)
             }
             // uncover the card for disconnected players after chosing the color
@@ -609,11 +590,12 @@ Item {
                     multiplayer.sendMessage(messageMoveCardIdToHand, {cardId: playerHands.children[i].chinaHidden[0].entityId, userId: userId})
                     playerHands.children[i].moveFromChinaHiddenToHand(playerHands.children[i].chinaHidden[0].entityId)
                     //handle invalid china hidden cards
+                    remainingTime+=waitTimerBeforeTakeDepot.interval/1000+1
+                    multiplayer.sendMessage(messageIncreaseRemainingTime, {inc: waitTimerBeforeTakeDepot.interval/1000+1, userId: userId})
                     waitTimerBeforeTakeDepot.start()
                     return
                 }
                 if (validCardIds){
-                    multiplayer.sendMessage(messageMoveCardsDepot, {cardIds: validCardIds, userId: userId})
                     depositCards(validCardIds)
                 }
                 //check done
@@ -655,15 +637,15 @@ Item {
         console.debug("multiplayer.activePlayer.userId: " + multiplayer.activePlayer.userId)
         console.debug("Turn started")
 
+        // check if the current card has an effect for the active player
+        if(depot.cardEffect()) return
+
         //check if done
         for (var i = 0; i < playerHands.children.length; i++) {
-            //endTurn is player is already done
+            //endTurn if player is already done
             if (playerHands.children[i].player === multiplayer.activePlayer){
-                if(playerHands.children[i].done) endTurn()
+                if(playerHands.children[i].done) return
 
-
-                // check if the current card has an effect for the active player
-                if(depot.cardEffect()) return //check for 8 and 3 in the first place
 
                 playerHands.children[i].activateChinaCheck()
                 //if chinaHidden dont mark valid, take a card and check if its valid, if not take depot and just chosen card
@@ -671,6 +653,9 @@ Item {
                 if(!playerHands.children[i].chinaHiddenAccessible){//if china hidden accessible wait for user to select a card
                     var validCardIds= playerHands.children[i].randomValidIds()
                     if(!validCardIds){
+                        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                        remainingTime+=waitTimerBeforeTakeDepot.interval/1000+1
+                        multiplayer.sendMessage(messageIncreaseRemainingTime, {inc: waitTimerBeforeTakeDepot.interval/1000+1, userId: userId})
                         waitTimerBeforeTakeDepot.start()
                         return
                     }
@@ -680,7 +665,7 @@ Item {
                 acted = false
 
                 // zoom in on the hand of the active local player
-                if (depot.skipped && multiplayer.myTurn) scaleHand(1.6)
+                if (!depot.skipped && multiplayer.myTurn) scaleHand(1.6)
                 // mark the valid card options
                 markValid()
 
@@ -692,11 +677,12 @@ Item {
                 // schedule AI to take over in 3 seconds in case the player is gone
                 multiplayer.leaderCode(function() {
                     if (!multiplayer.activePlayer || !multiplayer.activePlayer.connected) {
-                        aiTimeOut.restart()
+                        aiTimeOut.start()
                     }
                 })
             }
         }
+
     }
 
 
@@ -746,11 +732,6 @@ Item {
         if(!multiplayer.initialized && !multiplayer.singlePlayer){
             createGame()
         }
-
-        //for (var i = 0; i < multiplayer.players.length; i++){
-        //    console.debug("multiplayer.players[" + i +"].userId " + multiplayer.players[i].userId)
-        //}
-        //console.debug("multiplayer.myTurn " + multiplayer.myTurn)
 
         // reset all values at the start of the game
         initialized= false
@@ -1024,7 +1005,7 @@ Item {
         }
         depot.current   =undefined
         depot.last      =undefined
-        multiplayer.sendMessage(gameLogic.messageResetCurrentAndLast, userId)
+        multiplayer.sendMessage(messageResetCurrentAndLast, userId)
     }
 
     // find the playerHand of the active player and mark all valid card options
@@ -1082,23 +1063,22 @@ Item {
         //check if the active player has won the game
         for (var i = 0; i < playerHands.children.length; i++) {
             if (playerHands.children[i].player === multiplayer.activePlayer){
-
-
                 if(checkShithead()){
                     endGame()
                     multiplayer.sendMessage(messageEndGame, {userId: userId})
                 }
-
-                // refill cards
-
                 //if 10 was last card dont start turn for same player
                 again=false
                 if(depot.current){
                     if (depot.current.variationType === "10"){
+                        remainingTime+=waitTimerBeforeRemove.interval/1000+1
+                        multiplayer.sendMessage(messageIncreaseRemainingTime, {inc: waitTimerBeforeRemove.interval/1000+1, userId: userId})
                         waitTimerBeforeRemove.start()
                         return
                     }
                 }
+
+                // refill cards
                 if (!again){
                     var refillNumber = playerHands.children[i].activateChinaCheck()
 
@@ -1110,7 +1090,6 @@ Item {
             }
         }
         depot.multiple=undefined//is it necessary, cause it is also in hasEffect
-        multiplayer.sendMessage(messageSetMultiple, {multiple: undefined, userId: userId})
 
         // continue if the game is still going
         if (!gameOver && !again){
