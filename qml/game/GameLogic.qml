@@ -421,6 +421,8 @@ Item {
                     if (depot.validCard(cardId)){
                         var validIds=checkForMultiples(cardId)
                         acted = true
+                        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                        multiplayer.sendMessage(messageMoveCardDepot, {cardId: cardId, userId: userId})
                         depositCard(cardId)
                         if(validIds){
                             if(validIds.length>1){ //give the player the chance to select a second card
@@ -534,6 +536,8 @@ Item {
                 if (playerHands.children[i].inHand(cardId)){
                     // remove and deposit the card
                     playerHands.children[i].removeFromHand(cardId)
+                    var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                    multiplayer.sendMessage(messageMoveCardDepot, {cardId: cardId, userId: userId})
                     depot.depositCard(cardId)
                 }
                 // uncover the card for disconnected players after chosing the color
@@ -555,8 +559,6 @@ Item {
             if (playerHands.children[i].inHand(cardId)){
                 // remove and deposit the card
                 playerHands.children[i].removeFromHand(cardId)
-                var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                multiplayer.sendMessage(messageMoveCardDepot, {cardId: cardId, userId: userId})
                 depot.depositCard(cardId)
             }
             // uncover the card for disconnected players after chosing the color
