@@ -183,35 +183,25 @@ Item {
 
     // play a card effect depending on the card type
     function cardEffect(){
-        for (var i = 0; i < playerHands.children.length; i++) {
-            if (playerHands.children[i].player === multiplayer.activePlayer){
-                if (current){
-                    checkLast=false
-                    if (current.variationType === "3"){
-                        checkLast=true
-                        return false
-                    }
-                    if(current.variationType === "8" && skipped==false){
-                        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                        console.debug("cardEffect activePlayer userId:")
-                        console.debug(userId)
-                        multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: true, userId: userId})
-                        skip()
-                        skipped=true
-                        return true
-                    }
-                    else if (current.variationType === "8" && skipped==true){
-                        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                        multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: false, userId: userId})
-                        skipped = false
-                        return false
-                    }
-
-                    return false
-                }
-                return false
-            }
+        checkLast=false
+        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+        if (current && current.variationType === "3"){
+            checkLast=true
+            return false
         }
+        if(current && current.variationType === "8" && skipped==false){
+            console.debug("cardEffect activePlayer userId:")
+            console.debug(userId)
+            multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: true, userId: userId})
+            skip()
+            skipped=true
+            return true
+        }
+        else if (current && current.variationType === "8" && skipped==true){
+            multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: false, userId: userId})
+            skipped = false
+        }
+        return false
     }
 
 
