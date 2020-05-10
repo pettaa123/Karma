@@ -226,7 +226,7 @@ Item {
             else if (code == messageMoveCardsHand){
                 // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
+                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
                     multiplayer.leaderCode(function() {
                         sendGameStateToPlayer(tempMessage.userId)
                     })
@@ -239,7 +239,7 @@ Item {
             else if (code == messageMoveCardIdToHand){
                 // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
+                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
                     multiplayer.leaderCode(function() {
                         sendGameStateToPlayer(tempMessage.userId)
                     })
@@ -248,7 +248,7 @@ Item {
 
                 // find the playerHand of the active player and pick up cards
                 for (var i = 0; i < playerHands.children.length; i++) {
-                    if (playerHands.children[i].player.userId === message.userId){
+                    if (playerHands.children[i].player.userId === tempMessage.userId){
                         playerHands.children[i].moveFromChinaToHand(message.cardId)
                     }
                 }
@@ -257,7 +257,7 @@ Item {
             else if (code ==  messageIncreaseRemainingTime){
                 // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
+                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
                     multiplayer.leaderCode(function() {
                         sendGameStateToPlayer(tempMessage.userId)
                     })
@@ -269,7 +269,7 @@ Item {
             else if (code == messageSetDone){
                 // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
+                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
                     multiplayer.leaderCode(function() {
                         sendGameStateToPlayer(tempMessage.userId)
                     })
@@ -278,7 +278,7 @@ Item {
 
                 // find the playerHand of the active player and pick up cards
                 for (var i = 0; i < playerHands.children.length; i++) {
-                    if (playerHands.children[i].player.userId === message.userId){
+                    if (playerHands.children[i].player.userId === tempMessage.userId){
                         playerHands.children[i].done=true
                     }
                 }
@@ -288,7 +288,7 @@ Item {
             else if (code == messageRemoveDepot){
                 // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
+                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
                     multiplayer.leaderCode(function() {
                         sendGameStateToPlayer(tempMessage.userId)
                     })
@@ -301,7 +301,7 @@ Item {
             else if (code == messageMoveDepotToHand){
                 // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
+                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
                     multiplayer.leaderCode(function() {
                         sendGameStateToPlayer(tempMessage.userId)
                     })
@@ -314,7 +314,7 @@ Item {
             else if (code == messageMoveCardDepot){
                 // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
+                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
                     multiplayer.leaderCode(function() {
                         sendGameStateToPlayer(tempMessage.userId)
                     })
@@ -328,8 +328,8 @@ Item {
                 // if the message wasn't sent by the leader and
                 // if it wasn't sent by the active player, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.leaderPlayer.userId != message.userId &&
-                        multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
+                if (multiplayer.leaderPlayer.userId != tempMessage.userId &&
+                        multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
                     return
                 }
 
@@ -340,8 +340,8 @@ Item {
                 // if the message wasn't sent by the leader and
                 // if it wasn't sent by the active player, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.leaderPlayer.userId != message.userId &&
-                        multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId){
+                if (multiplayer.leaderPlayer.userId != tempMessage.userId &&
+                        multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
                     return
                 }
 
@@ -355,8 +355,8 @@ Item {
                 // if it wasn't a desktop test and
                 // if it wasn't sent by the active player, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.leaderPlayer.userId != message.userId &&
-                        multiplayer.activePlayer && multiplayer.activePlayer.userId != message.userId && !message.test){
+                if (multiplayer.leaderPlayer.userId != tempMessage.userId &&
+                        multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId && !tempMessage.test){
                     return
                 }
 
