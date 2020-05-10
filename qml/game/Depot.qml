@@ -40,10 +40,11 @@ Item {
         repeat: false
         interval: 3000
         onTriggered: {
-            effectTimer.stop()
             console.debug("effect Timer triggered")
+            effectTimer.stop()
+            skipped=true
             var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-            multiplayer.triggerNextTurn()
+            gameLogic.triggerNewTurn()
         }
     }
 
@@ -184,12 +185,13 @@ Item {
     // play a card effect depending on the card type
     function cardEffect(){
         checkLast=false
+        if(!current) return false
         var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
         if (current && current.variationType === "3"){
             checkLast=true
             return false
         }
-        if(current && current.variationType === "8" && skipped==false){
+        if(current.variationType === "8" && skipped==false){
             console.debug("cardEffect activePlayer userId:")
             console.debug(userId)
             multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: true, userId: userId})
@@ -197,10 +199,10 @@ Item {
             skipped=true
             return true
         }
-        else if (current && current.variationType === "8" && skipped==true){
-            multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: false, userId: userId})
-            skipped = false
-        }
+        multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: false, userId: userId})
+        skipped = false
+
+        console.debug("Skip: return false")
         return false
     }
 

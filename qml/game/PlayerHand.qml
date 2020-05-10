@@ -87,7 +87,8 @@ Item {
 
     function checkDone(){
         if (this.chinaHidden.length===0 && this.china.length===0 && this.hand.length===0){
-            done=true
+            this.done=true
+            return true
         }
         return false
     }
@@ -544,7 +545,7 @@ Item {
     // get a random valid card id from the playerHand
     function checkFirstValid(){
         var validIds = []
-        if (depot.validCard(chinaHidden[0].entityId)){
+        if (depot && depot.validCard(chinaHidden[0].entityId)){
             validIds.push(chinaHidden[0].entityId)
             return validIds
         }else{
