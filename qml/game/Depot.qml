@@ -41,7 +41,8 @@ Item {
         interval: 3000
         onTriggered: {
             effectTimer.stop()
-            multiplayer.triggerNextTurn()
+            var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+            multiplayer.triggerNextTurn(userId)
         }
     }
 
