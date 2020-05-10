@@ -325,11 +325,12 @@ Item {
             }
             // sync skipped state
             else if (code == messageSetSkipped){
-                // if the message wasn't sent by the leader and
-                // if it wasn't sent by the active player, the message is invalid
+                // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.leaderPlayer.userId != tempMessage.userId &&
-                        multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
+                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
+                    multiplayer.leaderCode(function() {
+                        sendGameStateToPlayer(tempMessage.userId)
+                    })
                     return
                 }
 
@@ -337,11 +338,12 @@ Item {
             }
 
             else if (code == messageResetCurrentAndLast){
-                // if the message wasn't sent by the leader and
-                // if it wasn't sent by the active player, the message is invalid
+                // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.leaderPlayer.userId != tempMessage.userId &&
-                        multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
+                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
+                    multiplayer.leaderCode(function() {
+                        sendGameStateToPlayer(tempMessage.userId)
+                    })
                     return
                 }
 
