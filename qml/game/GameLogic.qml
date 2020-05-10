@@ -635,17 +635,16 @@ Item {
     // start the turn for the active player
     function turnStarted(playerId) {
 
-
-
         console.debug("turnStarted() called")
+
+        console.debug("multiplayer.activePlayer.userId: " + multiplayer.activePlayer.userId)
+
         if(!multiplayer.activePlayer) {
             console.debug("ERROR: activePlayer not valid in turnStarted!")
             return
         }
 
 
-        console.debug("multiplayer.activePlayer.userId: " + multiplayer.activePlayer.userId)
-        console.debug("Turn started")
 
         gameLogic.startTurnTimer()
 

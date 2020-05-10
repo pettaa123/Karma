@@ -41,6 +41,7 @@ Item {
         interval: 3000
         onTriggered: {
             effectTimer.stop()
+            console.debug("effect Timer triggered")
             var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
             multiplayer.triggerNextTurn()
         }
@@ -217,6 +218,7 @@ Item {
 
     // skip the current player by playing a sound, setting the skipped variable and starting the skip timer
     function skip(){
+        console.debug("function skip()")
         skipSound.play()
         var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
         gameLogic.remainingTime+=effectTimer.interval/1000+1
