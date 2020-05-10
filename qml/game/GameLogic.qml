@@ -422,8 +422,6 @@ Item {
                         var validIds=checkForMultiples(cardId)
                         acted = true
                         depositCard(cardId)
-                        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                        multiplayer.sendMessage(messageMoveCardDepot, {cardId: cardId, userId: userId})
                         if(validIds){
                             if(validIds.length>1){ //give the player the chance to select a second card
 
