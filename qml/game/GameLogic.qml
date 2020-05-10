@@ -325,6 +325,13 @@ Item {
             }
             // sync skipped state
             else if (code == messageSetSkipped){
+                console.debug("code == messageSetSkipped:")
+                console.debug("activePlayer.userId")
+                console.debug(multiplayer.activePlayer.userId)
+                console.debug("tempMessage.userId:")
+                console.debug(tempMessage.userId)
+                console.debug("message.skipped:")
+                console.debug(message.skipped)
                 // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
                 if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
@@ -686,6 +693,9 @@ Item {
         // schedule AI to take over in 3 seconds in case the player is gone
         multiplayer.leaderCode(function() {
             if (!multiplayer.activePlayer || !multiplayer.activePlayer.connected) {
+                console.debug("depot.current.variationType:")
+                console.debug(depot.current.variationType)
+                console.debug("aiTimeOut.start from turnStarted")
                 aiTimeOut.start()
             }
         })
