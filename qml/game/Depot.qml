@@ -38,13 +38,14 @@ Item {
     Timer {
         id: effectTimer
         repeat: false
-        interval: 3000
+        interval: 500
         onTriggered: {
             console.debug("effect Timer triggered")
+            gameLogic.acted=true
             effectTimer.stop()
             skipped=true
             var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-            gameLogic.triggerNewTurn()
+            gameLogic.waitBeforeNewTurn.start()
         }
     }
 
@@ -58,8 +59,8 @@ Item {
         checkLast=false
 
         //sync last
-        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-        multiplayer.sendMessage(gameLogic.messageResetCurrentAndLast, {userId: userId})
+        //var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+        //multiplayer.sendMessage(gameLogic.messageResetCurrentAndLast, {userId: userId})
         last=undefined
         current=undefined
     }
@@ -199,7 +200,7 @@ Item {
             skipped=true
             return true
         }
-        multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: false, userId: userId})
+
         skipped = false
 
         console.debug("Skip: return false")
@@ -212,10 +213,15 @@ Item {
     function skip(){
         console.debug("function skip()")
         skipSound.play()
-        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-        gameLogic.remainingTime+=effectTimer.interval/1000+1
-        multiplayer.sendMessage(gameLogic.messageIncreaseRemainingTime, {inc: effectTimer.interval/1000+1, userId: userId})
-        effectTimer.start()
+        //var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+        //gameLogic.remainingTime+=effectTimer.interval/1000+1
+        //multiplayer.sendMessage(gameLogic.messageIncreaseRemainingTime, {inc: effectTimer.interval/1000+1, userId: userId})
+        gameLogic.acted=true
+
+        //skipped=true
+
+        gameLogic.startNewTurnTimer()
+        //effectTimer.start()
     }
 
     // reset the depot            var test=entityManager.getEntityById(cardId)
