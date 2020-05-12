@@ -187,23 +187,18 @@ Item {
     function cardEffect(){
         checkLast=false
         if(!current) return false
-        var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
         if (current && current.variationType === "3"){
             checkLast=true
             return false
         }
         if(current.variationType === "8" && skipped==false){
-            console.debug("cardEffect activePlayer userId:")
-            console.debug(userId)
-            multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: true, userId: userId})
             skip()
             skipped=true
+            console.debug("Skip: return TRUE")
             return true
         }
-
         skipped = false
-
-        console.debug("Skip: return false")
+        console.debug("Skip: return FALSE")
         return false
     }
 
@@ -230,7 +225,7 @@ Item {
         last = undefined
         checkLast = false
         skipped = false
-        effectTimer.stop()
+        //effectTimer.stop()
     }
 
     // sync the depot with the leader
