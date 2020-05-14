@@ -31,7 +31,7 @@ Item {
     anchors.top: gConsole.bottom
     radius: 15
     color: "white"
-    border.color: "#28a3c1"
+    border.color: "grey"
     border.width: 2.5
     visible: false
 
@@ -83,7 +83,7 @@ Item {
     color: "transparent"
     anchors.bottom: inputWindow.bottom
     anchors.bottomMargin: inputWindow.visible ? 0 : -5
-    anchors.right: inputWindow.right
+    anchors.left: inputWindow.left
     anchors.rightMargin: inputWindow.visible ? -20 : -22
     width: inputWindow.visible ? inputWindow.height : 60
     height: inputWindow.visible ? width : 60

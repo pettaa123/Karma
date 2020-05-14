@@ -53,7 +53,7 @@ EntityBase {
     font.pixelSize: 12
     font.bold: true
     font.family: standardFont.name
-    color: player && player.isFriend ? activeColor : "white"
+    color: player && player.isFriend ? activeColor : "black"
     width: playerTag.width - (leaderMarker.visible ? (leaderMarker.width + 6) : 0) // max width is reduced by leader marker
     wrapMode: Text.WrapAnywhere
     horizontalAlignment: Text.AlignHCenter

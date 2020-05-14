@@ -9,7 +9,7 @@ Item {
     anchors.fill: parent
     radius: 15
     color: "white"
-    border.color: "#28a3c1"
+    border.color: "grey"
     border.width: 2.5
   }
 

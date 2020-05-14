@@ -72,7 +72,7 @@ SceneBase {
     id: info
     radius: 15
     color: "white"
-    border.color: "#28a3c1"
+    border.color: "black"
     border.width: 2.5
     visible: true
     width: 130
@@ -132,7 +132,7 @@ SceneBase {
   PlayerTag {
     id: localTag
     player: gameNetwork.user
-    nameColor: info.visible ? "#28a3c1" : "white"
+    nameColor: info.visible ? "black" : "white"
     menu: true
     avatarSource: gameNetwork.user.profileImageUrl ? gameNetwork.user.profileImageUrl : "../../assets/img/User.png"
     level: Math.max(1, Math.min(Math.floor(gameNetwork.userHighscoreForCurrentActiveLeaderboard / 300), 999))

@@ -103,9 +103,9 @@ SceneBase {
             height: 50
             buttonImage.source: "../../assets/img/Home.png"
             anchors.right: gameWindowAnchorItem.right
-            anchors.rightMargin: 20
+            anchors.rightMargin: 5
             anchors.bottom: gameWindowAnchorItem.bottom
-            anchors.bottomMargin: 20
+            anchors.bottomMargin: 5
             onClicked: leaveGame.visible = true
         }
 

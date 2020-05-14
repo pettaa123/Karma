@@ -360,14 +360,12 @@ Item {
                         chinaHidden[i].hidden = false
                     }
                     chinaHidden[i].state="player"
-                    // reorganize the hand
-                    // reorganize the hand
                     chinaHidden[i].width = chinaHidden[i].originalWidth
                     chinaHidden[i].height = chinaHidden[i].originalHeight
                     hand.push(chinaHidden[i])
                     chinaHidden.splice(i, 1)
                     resetChinaHiddenAccessible()
-                    return
+                    break
                 }
                 //neatHand()
             }

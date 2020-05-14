@@ -12,8 +12,6 @@ Item {
     property var last
     // checklast instead of actual
     property bool checkLast : false
-    // block the player for a short period of time when he gets skipped
-    property alias effectTimer: effectTimer
     // whether the active player is skipped or not
     property bool skipped: false
     // holds temporary a card which was played second,third etc...
@@ -32,21 +30,6 @@ Item {
         volume: 0.5
         id: reverseSoundde
         source: "../../assets/snd/reverse.wav"
-    }
-
-    // blocks the player for a short period of time and trigger a new turn when he gets skipped
-    Timer {
-        id: effectTimer
-        repeat: false
-        interval: 500
-        onTriggered: {
-            console.debug("effect Timer triggered")
-            gameLogic.acted=true
-            effectTimer.stop()
-            skipped=true
-            var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-            gameLogic.waitBeforeNewTurn.start()
-        }
     }
 
     // put cards away if 10 was played
@@ -189,35 +172,24 @@ Item {
         if(!current) return false
         if (current && current.variationType === "3"){
             checkLast=true
-            return false
         }
         if(current.variationType === "8" && skipped==false){
-            skip()
+            //var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+            //multiplayer.sendMessage(gameLogic.messageSetSkipped, {skipped: true, userId: userId})
+            skipSound.play()
+            gameLogic.acted=true
             skipped=true
-            console.debug("Skip: return TRUE")
+            multiplayer.leaderCode(function () {
+                gameLogic.endTurn()
+            })
             return true
         }
-        skipped = false
-        console.debug("Skip: return FALSE")
+        if(skipped==true){
+            skipped =false
+        }
         return false
     }
 
-
-
-    // skip the current player by playing a sound, setting the skipped variable and starting the skip timer
-    function skip(){
-        console.debug("function skip()")
-        skipSound.play()
-        //var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-        //gameLogic.remainingTime+=effectTimer.interval/1000+1
-        //multiplayer.sendMessage(gameLogic.messageIncreaseRemainingTime, {inc: effectTimer.interval/1000+1, userId: userId})
-        gameLogic.acted=true
-
-        //skipped=true
-
-        gameLogic.startNewTurnTimer()
-        //effectTimer.start()
-    }
 
     // reset the depot            var test=entityManager.getEntityById(cardId)
     function reset(){
@@ -225,7 +197,6 @@ Item {
         last = undefined
         checkLast = false
         skipped = false
-        //effectTimer.stop()
     }
 
     // sync the depot with the leader
