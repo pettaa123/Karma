@@ -15,7 +15,7 @@ SceneBase {
     onBackClicked: window.state = 'menu'
     gameNetworkItem: gameNetwork
     state: "leaderboard"
-    tintColor: "#28a3c1"
+    tintColor: "grey"
     anchors.fill: gameWindowAnchorItem
   }
 

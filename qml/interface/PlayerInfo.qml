@@ -93,7 +93,7 @@ Item {
     box.radius: 30
     textSize: 28
     enabled: !refTag.player.isFriend && !refTag.friendRequested
-    textColor: enabled ? "#28a3c1" : "lightgrey"
+    textColor: enabled ? "#f9c336" : "lightgrey"
     visible: refTag.player != multiplayer.localPlayer
 
     text: {

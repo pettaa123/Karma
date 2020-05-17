@@ -25,11 +25,39 @@ Item {
         source: "../../assets/snd/skip.wav"
     }
 
-    // sound effect plays when a player gets skipped
+    // sound effect when player completes four
     SoundEffect {
         volume: 0.5
-        id: reverseSoundde
-        source: "../../assets/snd/reverse.wav"
+        id: yeahSound
+        source: "../../assets/snd/yeah.wav"
+    }
+
+
+    function fourSames(){
+        if(!current || !last){return false}
+        var toBeChecked=last
+        var counter=1
+        //if to be checked is of same value again, dig deeper
+        var reached=true
+        while(toBeChecked.variationType==current.variationType && reached){
+            reached=false
+            counter++
+            if(counter===4){
+                yeahSound.play()
+                return true
+            }
+            var z= toBeChecked.z
+            for (var j=0;j<deck.cardDeck.length;j++){
+                if(deck.cardDeck[j].state==="depot" && (deck.cardDeck[j].z===z-1)){
+                    if(deck.cardDeck[j].variationType===current.variationType){
+                        toBeChecked=deck.cardDeck[j]
+                        reached=true
+                        break
+                    }
+                }
+            }
+        }
+        return false
     }
 
     // put cards away if 10 was played
@@ -44,6 +72,7 @@ Item {
         //sync last
         //var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
         //multiplayer.sendMessage(gameLogic.messageResetCurrentAndLast, {userId: userId})
+
         last=undefined
         current=undefined
     }
@@ -180,6 +209,7 @@ Item {
             gameLogic.acted=true
             skipped=true
             multiplayer.leaderCode(function () {
+                console.debug("endTurn() from cardEffect()")
                 gameLogic.endTurn()
             })
             return true

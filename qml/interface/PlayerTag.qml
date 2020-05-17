@@ -10,7 +10,7 @@ EntityBase {
   property var player: MultiplayerUser{}
   property int level: 1
   property string activeColor: "#f9c336"
-  property string inactiveColor: "#28a3c1"
+  property string inactiveColor: "#f9c336"
 
   // set the image if the player is connected to facebook
   property string facebookImage: ""
@@ -149,7 +149,7 @@ EntityBase {
       verticalAlignment: Text.AlignVCenter
       font.pixelSize: 14
       font.family: standardFont.name
-      color: "white"
+      color: "black"
     }
   }
 

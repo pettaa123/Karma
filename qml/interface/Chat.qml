@@ -83,7 +83,7 @@ Item {
     color: "transparent"
     anchors.bottom: inputWindow.bottom
     anchors.bottomMargin: inputWindow.visible ? 0 : -5
-    anchors.left: inputWindow.left
+    anchors.left: inputWindow.visible? inputWindow.right: inputWindow.left
     anchors.rightMargin: inputWindow.visible ? -20 : -22
     width: inputWindow.visible ? inputWindow.height : 60
     height: inputWindow.visible ? width : 60

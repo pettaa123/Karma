@@ -160,7 +160,7 @@ SceneBase {
     anchors.rightMargin: 10
     font.pixelSize: 6
     color: "white"
-    text: "UNO © 2016 Matell, Inc."
+    text: "Felgo ONU demo"
     visible: false
   }
 

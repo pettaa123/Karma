@@ -29,7 +29,7 @@ Item {
     radius: 30
     anchors.fill: parent
     color: "white"
-    border.color: "#28a3c1"
+    border.color: "grey"
     border.width: 5
   }
 

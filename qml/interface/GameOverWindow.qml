@@ -21,7 +21,7 @@ Item {
     radius: 30
     anchors.fill: parent
     color: "white"
-    border.color: "#28a3c1"
+    border.color: "#f9c336"
     border.width: 5
 
     // catch the mouse clicks
