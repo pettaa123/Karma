@@ -227,6 +227,7 @@ Item {
         last = undefined
         checkLast = false
         skipped = false
+        multiple = undefined
     }
 
     // sync the depot with the leader
@@ -243,7 +244,7 @@ Item {
         //SHITHEAD
         depot.checkLast = checkLast? checkLast : false
         depot.last= lastId? entityManager.getEntityById(lastId):undefined
-        depot.multiple = multipleId? entityManager.getEntityById(lastId):undefined
+        depot.multiple = multipleId? entityManager.getEntityById(multipleId):undefined
     }
 
     // sync the depot with the leader

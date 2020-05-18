@@ -43,6 +43,7 @@ EntityBase {
     property var newParent
 
 
+
     // glow image highlights a valid card
     Image {
         id: glowImage
@@ -99,7 +100,6 @@ EntityBase {
         NumberAnimation { target: scaleTransform; property: "xScale"; easing.type: Easing.InOutQuad; to: 1.0; duration: 80 }
     }
 
-
     // Behaviors animate the card x and y movement and rotation
     Behavior on x {
         NumberAnimation { easing.type: Easing.InOutQuad; duration: 400 }
@@ -109,9 +109,9 @@ EntityBase {
         NumberAnimation { easing.type: Easing.InOutQuad; duration: 400 }
     }
 
-    Behavior on rotation {
-        NumberAnimation { easing.type: Easing.InOutQuad; duration: 400 }
-    }
+    //Behavior on rotation {
+    //    NumberAnimation { easing.type: Easing.InOutQuad; duration: 400 }
+    //}
 
     Behavior on width {
         NumberAnimation { easing.type: Easing.InOutQuad; duration: 400 }
@@ -181,6 +181,20 @@ EntityBase {
         card.saturation = 0
         card.lightness = 0.0
         cardImage.source = "../../assets/img/cards/" + variationType + "_" + cardColor + ".png"
+    }
+
+    SequentialAnimation {
+        alwaysRunToEnd: true
+        loops:2
+        id: shaker
+        running: false
+        NumberAnimation { target: card; property: "rotation";to: rotation+1.5; duration: 50 }
+        NumberAnimation { target: card; property: "rotation";to: rotation-1.5; duration: 50 }
+        NumberAnimation { target: card; property: "rotation";to: rotation; duration: 50 }
+    }
+
+    function shake(){
+        shaker.start()
     }
 
 }

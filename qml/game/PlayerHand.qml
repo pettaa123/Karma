@@ -58,9 +58,27 @@ Item {
     // the image changes for the active player
     Image {
         id: playerHandImage
-        source: multiplayer.activePlayer === player && !gameLogic.acted? "../../assets/img/PlayerHand2.png" : "../../assets/img/PlayerHand1.png"
-        width: parent.width / 400 * 560
-        height: parent.height / 134 * 260
+        source: getPlayerImage()
+        width: parent.width / 400 * 560//getPlayerImageWidth() //
+        height: parent.height / 134 * 260//getPlayerImageHeight() //
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: parent.height * (-0.5)
+        z: 0
+        smooth: true
+
+        onSourceChanged: {
+            z = 0
+        }
+    }
+
+    // playerHand background image
+    // the image changes for the active player
+    Image {
+        id: firstRoundImage
+        source: multiplayer.activePlayer === player && gameLogic.firstRound? "../../assets/img/PlayerHandFirstRound.png" : ""
+        width: parent.width / 400 * 700
+        height: parent.height / 134 * 450
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: parent.height * (-0.5)
@@ -84,6 +102,7 @@ Item {
         smooth: true
     }
 
+
     function checkDone(){
         if (chinaHidden.length===0 && china.length===0 && hand.length===0){
             return true
@@ -91,9 +110,38 @@ Item {
         return false
     }
 
+    //function getPlayerImageHeight(){
+    //    if(!gameLogic.firstRound){
+    //        return parent.height / 134 * 260
+    //    }
+    //    if(gameLogic.firstRound){
+    //        return parent.height / 134 * 300
+    //    }
+    //}
+    //
+    //function getPlayerImageWidth(){
+    //    if(!gameLogic.firstRound)
+    //        return (parent.width / 400 * 560)
+    //    if(gameLogic.firstRound)
+    //        return (parent.width/ 400 * 600)
+    //}
+
+
+
     function setDone(){
         done=true
-        playerHandImage.source="../../assets/img/PlayerHand3.png"
+    }
+
+    function resetDone(){
+        done=false
+    }
+
+    function getPlayerImage()
+    {
+        if(done)
+            return "../../assets/img/PlayerHand3.png"
+        var imagePath = multiplayer.activePlayer === player && !gameLogic.acted? "../../assets/img/PlayerHand2.png" : "../../assets/img/PlayerHand1.png"
+        return imagePath
     }
 
 
@@ -133,7 +181,7 @@ Item {
         resetChinaAccessible()
         resetChinaHiddenAccessible()
         //scaleHand(1.0)
-        done=false
+        resetDone()
 
     }
 
@@ -175,6 +223,32 @@ Item {
             card.x = hand.length>0 ?cardX - originalWidth/3:cardX
             card.z = hand.length>0 ?i -100 + playerHandImage.z:i +40 + playerHandImage.z
         }
+    }
+
+    function neatFirstRound(){
+        // recalculate the offset between cards if there are too many in the hand
+        // make sure they stay within the playerHand
+        offset = originalWidth * zoom / 10
+
+        // calculate the card position and rotation in the hand and change the z order
+        for (var i = 0; i < hand.length; i ++){
+            var card = hand[i]
+            // angle span for spread cards in hand
+            var handAngle = 0
+            // card angle depending on the array position
+            var cardAngle = handAngle / hand.length * (i + 0.5) - handAngle / 2
+            //offset of all cards + one card width
+            var handWidth = offset * (hand.length - 1) + card.originalWidth * zoom
+            // x value depending on the array position
+            var cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
+
+            card.rotation = cardAngle
+            card.y = Math.abs(cardAngle) * 1.5
+            card.x = cardX
+            card.z = i +50 + firstRoundImage.z
+        }
+
+
     }
 
     // organize the hand and spread the cards
@@ -503,6 +577,10 @@ Item {
     //    }
     //}
 
+    function setFirstRound(){
+
+    }
+
     // scale the whole playerHand of the active localPlayer with a zoom factor
     function scaleHand(scale){
         zoom = scale
@@ -522,9 +600,6 @@ Item {
             chinaHidden[i].width = chinaHidden[i].originalWidth * zoom
             chinaHidden[i].height = chinaHidden[i].originalHeight * zoom
         }
-
-        neatHand()
-        neatChina()
     }
 
     // get a random valid card id from the playerHand

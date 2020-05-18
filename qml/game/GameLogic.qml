@@ -11,7 +11,7 @@ Item {
     property double remainingTime
     // turn time for the active player, in seconds
     // do not set this too low, otherwise players with higher latency could run into problems as they get skipped by the leader
-    property int userInterval: multiplayer.myTurn && !multiplayer.amLeader ? 9 : 15
+    property int userInterval: multiplayer.myTurn && !multiplayer.amLeader ? 15 : 20
     // turn time for AI players, in milliseconds
     property int aiTurnTime: 1000 //1200
     // restart the game at the end after a few seconds
@@ -20,6 +20,7 @@ Item {
     property bool gameOver: false
 
     property bool fourSames: false
+    property bool firstRound: true
 
     property int messageSyncGameState: 0
     property int messageRequestGameState: 1
@@ -128,6 +129,7 @@ Item {
             var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
             multiplayer.sendMessage(messageRemoveDepot, {userId: userId})
             depot.removeDepot()
+            depot.multiple=undefined
             turnStarted(multiplayer.activePlayer)
         }
     }
@@ -445,6 +447,7 @@ Item {
             if (selectedCardState !== "player" && selectedCardState !== "china" && selectedCardState !== "chinaHidden") {
                 return
             }
+            console.debug("onCardSelected: acted: "+ acted + "myTurn: " + multiplayer.myTurn + "depot.skipped: " + depot.skipped)
             if (multiplayer.myTurn && !depot.skipped && initialized &&!acted) {
                 // deposit the valid card
                 if (depot.validCard(cardId)){
@@ -455,17 +458,12 @@ Item {
                     multiplayer.sendMessage(messageMoveCardDepot, {cardId: cardId, userId: multiplayer.localPlayer.userId})
 
                     if(validIds && validIds.length>1){ //give the player the chance to select a second card
-
                         depot.multiple=entityManager.getEntityById(cardId).variationType
-                        if(depot.multiple.variationType!="10"){
+                        if(depot.multiple.variationType!=="10"){
                             acted=false
                             waitInputTimer.restart()
                             return
                         }
-                    }
-                    if(depot.fourSames()){
-                        fourSames=true
-                        waitTimerBeforeRemove.restart()
                     }
 
                     for(var i=0;i<playerHands.children.length;i++){
@@ -477,11 +475,15 @@ Item {
                             }
                         }
                     }
-                    if(fourSames){
+
+                    if(depot.fourSames()){
+                        waitTimerBeforeRemove.restart()
                         return
                     }
+
                     console.debug("endTurn() from onCardSelected")
                     endTurn()
+                    return
                 }
 
 
@@ -498,6 +500,16 @@ Item {
                         //multiplayer.sendMessage(messageIncreaseRemainingTime, {inc: waitTimerBeforeTakeDepot.interval/1000+1, userId: userId})
                         multiplayer.sendMessage(messageMoveCardIdToHand, {cardId: cardId, userId: userId})
                         waitTimerBeforeTakeDepot.restart()
+                        return
+                    }
+                }
+                //if card in hand but not valid shake it
+                for (var i = 0; i < playerHands.children.length; i++) {
+                    if (playerHands.children[i].player === multiplayer.activePlayer){
+                        if (playerHands.children[i].inHand(cardId)){
+                            var card=entityManager.getEntityById(cardId)
+                            card.shake()
+                        }
                     }
                 }
             }
@@ -543,7 +555,7 @@ Item {
         fourSames = false
         gameOver = false
         timer.start()
-        scaleHand()
+        scaleHand(1.0)
         //markValid()
         gameScene.gameOver.visible = false
         gameScene.leaveGame.visible = false
@@ -585,6 +597,7 @@ Item {
         for (var i = 0; i < playerHands.children.length; i++) {
             // find the playerHand for the active player
             // if the selected card is in the playerHand of the active player
+            playerHands.children[i].activateChinaCheck()
             if (playerHands.children[i].inHand(cardId)){
                 // remove and deposit the card
                 playerHands.children[i].removeFromHand(cardId)
@@ -628,20 +641,14 @@ Item {
                     depositCards(validCardIds)
                 }
 
-                var fourSames= false
-
-                if(depot.fourSames()){
-                    fourSames=true
-                    waitTimerBeforeRemove.restart()
-                }
 
                 //check done
                 if(playerHands.children[i].checkDone()){
                     playerHands.children[i].setDone()
                     multiplayer.sendMessage(messageSetDone, {userId: userId})
                 }
-                else if(fourSames){
-                    acted=false
+                if(depot.fourSames()){
+                    waitTimerBeforeRemove.restart()
                     return
                 }
                 break
@@ -669,8 +676,28 @@ Item {
         }
     }
 
+    function handleFirstRound(){
+        var playerHand = getHand(multiplayer.localPlayer.activePlayer)
+        playerHand.originalHeight=134*2
+    }
+
+
     // start the turn for the active player
     function turnStarted(playerId) {
+
+        if(firstRound && multiplayer.activePlayer.connected){
+            for (var i = 0; i < playerHands.children.length; i++) {
+                //endTurn if player is already done
+                if (playerHands.children[i].player === multiplayer.activePlayer){
+                    playerHands.children[i].neatFirstRound()
+
+                    break
+                }
+            }
+            return
+
+        }
+
         console.debug("turnStarted() called")
         acted=false
 
@@ -736,7 +763,8 @@ Item {
         }
 
         // zoom in on the hand of the active local player
-        if (multiplayer.myTurn) scaleHand(1.6)
+        if (multiplayer.myTurn){scaleHand(1.6)
+        }
         // mark the valid card options
         //markValid()
 
@@ -757,7 +785,7 @@ Item {
         if(waitBeforeNewTurn.running || waitInputTimer.running || waitTimerBeforeRemove.running || waitTimerBeforeTakeDepot.running){
             return
         }
-
+        console.debug("turnTimedOut() acted: "+ acted + "myTurn: " + multiplayer.myTurn)
         if (multiplayer.myTurn && !acted){
             acted=true
             scaleHand(1.0)
@@ -848,7 +876,7 @@ Item {
         })
 
         // start by scaling the playerHand of the active localPlayer
-        scaleHand()
+        scaleHand(1.0)
 
         console.debug("InitGame finished!")
     }
@@ -1120,6 +1148,9 @@ Item {
         for (var i = 0; i < playerHands.children.length; i++){
             if (playerHands.children[i].player && playerHands.children[i].player.userId == multiplayer.localPlayer.userId){
                 playerHands.children[i].scaleHand(scale)
+                playerHands.children[i].neatHand()
+                playerHands.children[i].neatChina()
+
             }
         }
     }
