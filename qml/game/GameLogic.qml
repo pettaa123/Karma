@@ -11,7 +11,7 @@ Item {
     property double remainingTime
     // turn time for the active player, in seconds
     // do not set this too low, otherwise players with higher latency could run into problems as they get skipped by the leader
-    property int userInterval: multiplayer.myTurn && !multiplayer.amLeader ? 15 : 20
+    property int userInterval: getUserInterval()
     // turn time for AI players, in milliseconds
     property int aiTurnTime: 1000 //1200
     // restart the game at the end after a few seconds
@@ -41,15 +41,23 @@ Item {
     property int messageResetCurrentAndLast: 17
     property int messageMoveCardIdToHand: 18
     property int messageSetDone: 19
+    property int messageSetFirstRound: 20
 
     // gets set to true when a message is received before the game state got synced. in that case, request a new game state
     property bool receivedMessageBeforeGameStateInSync: false
 
-    // bling sound effect when selecting a color for wild or wild4 cards
+    // win sound
     SoundEffect {
         volume: 0.5
         id: winSound
         source: "../../assets/snd/juhu.wav"
+    }
+
+    // sound when drawing depot
+    SoundEffect {
+        volume: 0.5
+        id: drawDepotSound
+        source: "../../assets/snd/shit.wav"
     }
 
     // timer decreases the remaining turn time for the active player
@@ -345,7 +353,24 @@ Item {
                 depositCard(tempMessage.cardId)
             }
             // sync skipped state
-            else if (code == messageSetSkipped){
+            //else if (code == messageSetSkipped){
+            //    // if there is an active player with a different userId, the message is invalid
+            //    // the message was probably sent after the leader triggered the next turn
+            //    if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
+            //        multiplayer.leaderCode(function() {
+            //            console.debug("sendGameSateToPlayer from messageSetSkipped")
+            //            sendGameStateToPlayer(tempMessage.userId)
+            //        })
+            //        return
+            //    }
+            //
+            //    if(multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
+            //        depot.skipped = tempMessage.skipped
+            //    }
+            //}
+
+            // sync skipped state
+            else if (code == messageSetFirstRound){
                 // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
                 if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
@@ -355,30 +380,10 @@ Item {
                     })
                     return
                 }
-                console.debug("depot.skipped: ")
-                console.debug(depot.skipped)
-                console.debug("tempMessage.skipped: ")
-                console.debug(tempMessage.skipped)
-                if(multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
-                    depot.skipped = tempMessage.skipped
-                }
-                console.debug("depot.skipped after: ")
-                console.debug(depot.skipped)
+                firstRound = tempMessage.firstRoundBool
+                gameLogic.startTurnTimer()
             }
 
-            //else if (code == messageResetCurrentAndLast){
-            //    // if there is an active player with a different userId, the message is invalid
-            //    // the message was probably sent after the leader triggered the next turn
-            //    if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
-            //        multiplayer.leaderCode(function() {
-            //            sendGameStateToPlayer(tempMessage.userId)
-            //        })
-            //        return
-            //    }
-            //
-            //    depot.current = undefined
-            //    depot.last = undefined
-            //}
 
             // game ends
             else if (code == messageEndGame){
@@ -439,11 +444,33 @@ Item {
 
         // the player selected a card
         onCardSelected: {
+            var selectedCardState =entityManager.getEntityById(cardId).state
+
+            //handle first Round
+            if(firstRound){
+                //check if selected card is in your hand
+
+                if (selectedCardState !== "player" && selectedCardState !== "china" && selectedCardState !== "chinaHidden") {
+                    return
+                }
+                for (var i = 0; i < playerHands.children.length; i++) {
+                    if (playerHands.children[i].player === multiplayer.localPlayer){
+                        if (!playerHands.children[i].inHandOrChina(cardId)) return
+                        playerHands.children[i].shakeCard(cardId)
+                        playerHands.children[i].exchangeShakingCard()
+                        break
+                    }
+                }
+                return
+            }
+
+
+
             if (depot.multiple){
                 if(entityManager.getEntityById(cardId).variationType !== depot.multiple) return
             }
 
-            var selectedCardState =entityManager.getEntityById(cardId).state
+            //var selectedCardState =entityManager.getEntityById(cardId).state
             if (selectedCardState !== "player" && selectedCardState !== "china" && selectedCardState !== "chinaHidden") {
                 return
             }
@@ -684,21 +711,8 @@ Item {
 
     // start the turn for the active player
     function turnStarted(playerId) {
-
-        if(firstRound && multiplayer.activePlayer.connected){
-            for (var i = 0; i < playerHands.children.length; i++) {
-                //endTurn if player is already done
-                if (playerHands.children[i].player === multiplayer.activePlayer){
-                    playerHands.children[i].neatFirstRound()
-
-                    break
-                }
-            }
-            return
-
-        }
-
         console.debug("turnStarted() called")
+        console.debug("multiplayer.activePlayer.userId: " + multiplayer.activePlayer.userId)
         acted=false
 
 
@@ -707,10 +721,21 @@ Item {
             return
         }
 
-        console.debug("multiplayer.activePlayer.userId: " + multiplayer.activePlayer.userId)
+
         // start the timer
         gameLogic.startTurnTimer()
 
+        if(firstRound && multiplayer.activePlayer.connected){
+            for (var i = 0; i < playerHands.children.length; i++) {
+                //endTurn if player is already done
+                if (playerHands.children[i].player === multiplayer.localPlayer){
+                    playerHands.children[i].neatFirstRound()
+
+                    break
+                }
+            }
+            return
+        }
 
         for (var i = 0; i < playerHands.children.length; i++) {
             //endTurn if player is already done
@@ -732,14 +757,9 @@ Item {
         }
 
 
-
-        //check if done
         for (var i = 0; i < playerHands.children.length; i++) {
             //endTurn if player is already done
             if (playerHands.children[i].player === multiplayer.activePlayer){
-                //if(playerHands.children[i].done){
-                //    endTurn()
-                //}
 
                 playerHands.children[i].activateChinaCheck()
 
@@ -782,17 +802,38 @@ Item {
 
     // schedule AI to take over after 10 seconds if the connected player is inactive
     function turnTimedOut(){
+
+        // clean up our UI
+        timer.running = false
+
+        if(gameLogic.firstRound){
+            firstRound=false
+
+            // player timed out, so leader should take over
+            multiplayer.leaderCode(function () {
+                var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                // if the player is in the process of chosing a color
+                multiplayer.sendMessage(messageSetFirstRound,{firstRoundBool: false, userId: userId})
+                //multiplayer.triggerNextTurn()//call directly to have userID as parameter
+            })
+
+            if(multiplayer.activePlayer.userId===multiplayer.localPlayer.userId){
+                turnStarted(multiplayer.localPlayer.userId)
+            }
+
+            return
+        }
+
         if(waitBeforeNewTurn.running || waitInputTimer.running || waitTimerBeforeRemove.running || waitTimerBeforeTakeDepot.running){
             return
         }
+
         console.debug("turnTimedOut() acted: "+ acted + "myTurn: " + multiplayer.myTurn)
         if (multiplayer.myTurn && !acted){
             acted=true
             scaleHand(1.0)
         }
 
-        // clean up our UI
-        timer.running = false
 
         // player timed out, so leader should take over
         multiplayer.leaderCode(function () {
@@ -835,7 +876,9 @@ Item {
         // reset all values at the start of the game
         initialized= false
         gameOver = false
+        firstRound=true
         timer.start()
+        gameScene.jokerButton.visible = true
         gameScene.gameOver.visible = false
         gameScene.leaveGame.visible = false
         gameScene.switchName.visible = false
@@ -876,7 +919,7 @@ Item {
         })
 
         // start by scaling the playerHand of the active localPlayer
-        scaleHand(1.0)
+        //scaleHand(1.0)
 
         console.debug("InitGame finished!")
     }
@@ -1044,6 +1087,19 @@ Item {
     }
 
     // the leader hands out the cards to the other players
+    function joker(){
+        if (multiplayer.myTurn && !depot.skipped && initialized &&!acted &&!firstRound) {
+            var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+            multiplayer.sendMessage(messageMoveDepotToHand, {userId: userId})
+            takeDepot(userId)
+            console.debug("endTurn() from waitTimerBeforeTakeDepot")
+            gameLogic.endTurn()
+            return true
+        }
+        else return false
+    }
+
+    // the leader hands out the cards to the other players
     function initHands(){
         multiplayer.leaderCode(function () {
             for (var i = 0; i < playerHands.children.length; i++) {
@@ -1099,6 +1155,7 @@ Item {
         for (var i = 0; i < playerHands.children.length; i++) {
             if (playerHands.children[i].player.userId === userId){
                 playerHands.children[i].pickUpDepot()
+                if(userId===multiplayer.localPlayer.userId) drawDepotSound.play()
                 break
             }
         }
@@ -1314,6 +1371,13 @@ Item {
         restartGameTimer.stop()
         // the true causes a gameStarted to be emitted
         gameLogic.initGame(true)
+    }
+
+    function getUserInterval(){
+        if(gameLogic.firstRound){
+            return 10
+        }
+        return multiplayer.myTurn && !multiplayer.amLeader ? 25 : 27
     }
 
 }

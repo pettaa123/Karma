@@ -21,6 +21,8 @@ EntityBase {
     property int order
     property int val
 
+    property bool shaking
+
     // to show all cards on the screen and to test multiplayer syncing, set this to true
     // it is useful for testing, thus always enable it for debug builds and non-publish builds
     property bool forceShowAllCards: system.debugBuild && !system.publishBuild
@@ -193,8 +195,29 @@ EntityBase {
         NumberAnimation { target: card; property: "rotation";to: rotation; duration: 50 }
     }
 
+    SequentialAnimation {
+        alwaysRunToEnd: true
+        loops: Animation.Infinite
+        id: shakerToggle
+        running: false
+        NumberAnimation { target: card; property: "rotation";to: rotation+1.5; duration: 50 }
+        NumberAnimation { target: card; property: "rotation";to: rotation-1.5; duration: 50 }
+        NumberAnimation { target: card; property: "rotation";to: rotation; duration: 50 }
+    }
+
     function shake(){
         shaker.start()
+    }
+
+    function shakeToggle(){
+        if (shaking==true){
+            shaking=false
+            shakerToggle.stop()
+        }
+        else {
+            shaking=true
+            shakerToggle.start()
+        }
     }
 
 }

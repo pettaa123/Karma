@@ -76,9 +76,9 @@ Item {
     // the image changes for the active player
     Image {
         id: firstRoundImage
-        source: multiplayer.activePlayer === player && gameLogic.firstRound? "../../assets/img/PlayerHandFirstRound.png" : ""
-        width: parent.width / 400 * 700
-        height: parent.height / 134 * 450
+        source: multiplayer.localPlayer === player && gameLogic.firstRound? "../../assets/img/PlayerHandFirstRound.png" : ""
+        width: parent.width / 400 * 750
+        height: parent.height / 134 * 550
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: parent.height * (-0.5)
@@ -90,6 +90,61 @@ Item {
         }
     }
 
+    Rectangle {
+        id: handRect
+        visible: multiplayer.localPlayer === player && gameLogic.firstRound
+        width: 97*3+97/3
+        height: 152
+        color: "transparent"
+        opacity: 0.5
+        border.color: "black"
+        border.width: 2
+        radius: 5
+        z: firstRoundImage.z+2+100
+        x:30
+
+        Text {
+            transformOrigin: Item.Left
+            //anchors.left: parent.left
+            rotation : -90
+            anchors.fill:parent
+            anchors.leftMargin: 11
+            font.family: "Tahoma"
+            font.pointSize: 14
+            text:  qsTr("hand")
+            verticalAlignment: Text.AlignVCenter
+        }
+    }
+
+
+    Rectangle {
+        id: chinaRect
+        visible: multiplayer.localPlayer === player && gameLogic.firstRound
+        width: 97*3+97/3
+        height: 152
+        color: "transparent"
+        opacity: 0.5
+        border.color: "black"
+        border.width: 2
+        radius: 5
+        z: firstRoundImage.z+1+100
+        y:-150
+        x:30
+
+        Text {
+            transformOrigin: Item.Left
+            //anchors.left: parent.left
+            rotation : -90
+            anchors.fill:parent
+            anchors.leftMargin: 11
+            font.family: "Tahoma"
+            font.pointSize: 14
+            text:  qsTr("bunker")
+            verticalAlignment: Text.AlignVCenter
+
+        }
+    }
+
     // playerHand blocked image is visible when the player gets skipped
     Image {
         anchors.bottom: parent.bottom
@@ -98,7 +153,7 @@ Item {
         width: 170
         height: width
         z: 200
-        visible: depot.skipped && multiplayer.activePlayer == player
+        visible: depot.skipped && multiplayer.activePlayer === player
         smooth: true
     }
 
@@ -109,24 +164,6 @@ Item {
         }
         return false
     }
-
-    //function getPlayerImageHeight(){
-    //    if(!gameLogic.firstRound){
-    //        return parent.height / 134 * 260
-    //    }
-    //    if(gameLogic.firstRound){
-    //        return parent.height / 134 * 300
-    //    }
-    //}
-    //
-    //function getPlayerImageWidth(){
-    //    if(!gameLogic.firstRound)
-    //        return (parent.width / 400 * 560)
-    //    if(gameLogic.firstRound)
-    //        return (parent.width/ 400 * 600)
-    //}
-
-
 
     function setDone(){
         done=true
@@ -140,6 +177,8 @@ Item {
     {
         if(done)
             return "../../assets/img/PlayerHand3.png"
+        if(gameLogic.firstRound && multiplayer.localPlayer === player)
+            return ""
         var imagePath = multiplayer.activePlayer === player && !gameLogic.acted? "../../assets/img/PlayerHand2.png" : "../../assets/img/PlayerHand1.png"
         return imagePath
     }
@@ -202,8 +241,8 @@ Item {
             var cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
 
             card.rotation = hand.length>0? cardAngle-28:cardAngle
-            card.y = hand.length>0 ?-Math.sin(Math.sin((cardAngle-28)*3.14/180))*card.height/1.1 -originalHeight/1.4:Math.abs(cardAngle) * 1.5
-            card.x = hand.length>0 ?cardX - originalWidth/3:cardX
+            card.y = hand.length>0 ?-Math.sin(Math.sin((cardAngle-23)*3.14/180))*card.height/1.1 -originalHeight/1.4:Math.abs(cardAngle) * 1.5
+            card.x = hand.length>0 ?cardX - originalWidth/4:cardX
             card.z = hand.length>0 ?i -50 + playerHandImage.z:i +50 + playerHandImage.z
 
         }
@@ -219,8 +258,8 @@ Item {
             // x value depending on the array position
             cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
             card.rotation = hand.length>0? cardAngle-28:cardAngle
-            card.y = hand.length>0 ?card.y = (-Math.sin(Math.sin((cardAngle-28)*3.14/180))*card.height/1.1 -originalHeight/1.4)-5:(Math.abs(cardAngle) * 1.5)-5
-            card.x = hand.length>0 ?cardX - originalWidth/3:cardX
+            card.y = hand.length>0 ?card.y = (-Math.sin(Math.sin((cardAngle-23)*3.14/180))*card.height/1.1 -originalHeight/1.4)-5:(Math.abs(cardAngle) * 1.5)-5
+            card.x = hand.length>0 ?cardX - originalWidth/5:cardX
             card.z = hand.length>0 ?i -100 + playerHandImage.z:i +40 + playerHandImage.z
         }
     }
@@ -228,7 +267,7 @@ Item {
     function neatFirstRound(){
         // recalculate the offset between cards if there are too many in the hand
         // make sure they stay within the playerHand
-        offset = originalWidth * zoom / 10
+        offset = originalWidth * zoom / 4
 
         // calculate the card position and rotation in the hand and change the z order
         for (var i = 0; i < hand.length; i ++){
@@ -243,12 +282,51 @@ Item {
             var cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
 
             card.rotation = cardAngle
-            card.y = Math.abs(cardAngle) * 1.5
+            card.y = 0
             card.x = cardX
             card.z = i +50 + firstRoundImage.z
         }
+        //handRect.x=0
+        handRect.y= -5
+        handRect.height=hand[0].originalHeight+10
 
+        // calculate the card position and rotation in the hand and change the z order
+        for (i = 0; i < china.length; i ++){
+            card = china[i]
+            // angle span for spread cards in hand
+            handAngle = 0 //40
+            // card angle depending on the array position
+            cardAngle = handAngle / china.length * (i + 0.5) - handAngle / 2
+            //offset of all cards + one card width
+            handWidth = offset * (china.length - 1) + card.originalWidth * zoom
+            // x value depending on the array position
+            cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
 
+            card.rotation = cardAngle
+            card.y = -card.height * 1.08
+            card.x = cardX
+            card.z = i +50 + firstRoundImage.z
+        }
+        //chinaRect.x=0
+        chinaRect.y=-card.height * 1.08-11
+        chinaRect.height=china[0].originalHeight+16
+
+        for (i = 0; i < chinaHidden.length; i ++){
+            card = chinaHidden[i]
+            // angle span for spread cards in hand
+            handAngle = 0 //40
+            // card angle depending on the array position
+            cardAngle = handAngle / chinaHidden.length * (i + 0.5) - handAngle / 2
+            //offset of all cards + one card width
+            handWidth = offset * (chinaHidden.length - 1) + card.originalWidth * zoom
+            // x value depending on the array position
+            cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
+
+            card.rotation = cardAngle
+            card.y = -card.height * 1.08-5
+            card.x = cardX
+            card.z = i +40 + firstRoundImage.z
+        }
     }
 
     // organize the hand and spread the cards
@@ -311,7 +389,7 @@ Item {
             for (i = 6; i < pickUp.length; i ++){
                 hand.push(pickUp[i])
                 changeParent(pickUp[i])
-                if (multiplayer.localPlayer == player){
+                if (multiplayer.localPlayer === player){
                     pickUp[i].hidden = false
                 }
                 drawSound.play()
@@ -323,7 +401,7 @@ Item {
             for (i = 0; i < pickUp.length; i ++){
                 hand.push(pickUp[i])
                 changeParent(pickUp[i])
-                if (multiplayer.localPlayer == player){
+                if (multiplayer.localPlayer === player){
                     pickUp[i].hidden = false
                 }
                 drawSound.play()
@@ -346,7 +424,7 @@ Item {
         for (var i = 0; i < pickUp.length; i ++){
             hand.push(pickUp[i])
             changeParent(pickUp[i])
-            if(multiplayer.localPlayer == player){
+            if(multiplayer.localPlayer === player){
                 pickUp[i].hidden = false
             }
             drawSound.play()
@@ -365,30 +443,30 @@ Item {
             var tmpCard = entityManager.getEntityById(cardIDs[i])
             changeParent(tmpCard)
             deck.cardsInStack --
-            if (multiplayer.localPlayer == player){
+            if (multiplayer.localPlayer === player){
                 tmpCard.hidden = false
             }
             hand.push(tmpCard)
             drawSound.play()
         }
-        for (var i = 0; i < chinaIDs.length; i++){
-            var tmpCard = entityManager.getEntityById(chinaIDs[i])
+        for (i = 0; i < chinaIDs.length; i++){
+            tmpCard = entityManager.getEntityById(chinaIDs[i])
             changeParent(tmpCard)
             tmpCard.state = "china"
             tmpCard.hidden=false
             deck.cardsInStack --
-            if (multiplayer.localPlayer == player){
+            if (multiplayer.localPlayer === player){
                 tmpCard.hidden = false
             }
             china.push(tmpCard)
             drawSound.play()
         }
-        for (var i = 0; i < chinaHiddenIDs.length; i++){
-            var tmpCard = entityManager.getEntityById(chinaHiddenIDs[i])
+        for (i = 0; i < chinaHiddenIDs.length; i++){
+            tmpCard = entityManager.getEntityById(chinaHiddenIDs[i])
             changeParent(tmpCard)
             tmpCard.state = "chinaHidden"
             deck.cardsInStack --
-            if (multiplayer.localPlayer == player){
+            if (multiplayer.localPlayer === player){
                 tmpCard.hidden = true
             }
             chinaHidden.push(tmpCard)
@@ -429,13 +507,97 @@ Item {
             return false}
     }
 
+    function shakeCard(cardId){
+        var card=entityManager.getEntityById(cardId)
+        if(card.state==="china"){
+            for(var i=0;i<china.length;i++){
+                if(china[i].shaking && china[i].entityId!==cardId) china[i].shakeToggle()
+                if(china[i].entityId===cardId) china[i].shakeToggle()
+            }
+        }
+        if(card.state==="player"){
+            for(i=0;i<hand.length;i++){
+                if(hand[i].shaking && hand[i].entityId!==cardId) hand[i].shakeToggle()
+                if(hand[i].entityId===cardId) hand[i].shakeToggle()
+            }
+        }
+    }
+
+    function exchangeShakingCard(){
+        var shakingIndex=3
+        //hand
+        for(var i=0;i<hand.length;i++){
+            //find card shaking index
+            if(hand[i].shaking){
+                shakingIndex=i
+                break
+            }
+        }
+        if(shakingIndex!==3){
+            for(i=0;i<china.length;i++){
+                //find shaking card
+                if(china[i].shaking){
+                    var temp=hand[shakingIndex]
+                    hand.splice(shakingIndex,1,china[i])
+                    hand[shakingIndex].shakeToggle()
+                    hand[shakingIndex].state="player"
+                    china.splice(i,1,temp)
+                    china[i].shakeToggle()
+                    china[i].state="china"
+                    neatFirstRound()
+                    return
+                }
+            }
+            shakingIndex=3
+        }
+        for(i=0;i<china.length;i++){
+            //find card shaking index
+            if(china[i].shaking){
+                shakingIndex=i
+                break
+            }
+        }
+        if(shakingIndex!==3){
+            for(i=0;i<hand.length;i++){
+                //find shaking card
+                if(hand[i].shaking){
+                    var temp=hand[i]
+                    hand.splice(i,1,china[shakingIndex])
+                    hand[i].shakeToggle()
+                    hand[i].state="player"
+                    china.splice(shakingIndex,1,temp)
+                    china[shakingIndex].shakeToggle()
+                    china[shakingIndex].state="china"
+                    neatFirstRound()
+                    return
+                }
+            }
+        }
+    }
+
+    // check if a card with a specific id is on this hand
+    function inHandOrChina(cardId){
+        for (var i = 0; i < china.length; i ++){
+            if(china[i].entityId === cardId){
+                return true
+            }
+        }
+
+        for (i = 0; i < hand.length; i ++){
+            if(hand[i].entityId === cardId){
+                return true
+            }
+        }
+        return false
+    }
+
     function moveFromChinaHiddenToHand(cardId){
         if (chinaHiddenAccessible){
             for (var i = 0; i < chinaHidden.length; i ++){
                 if(chinaHidden[i].entityId === cardId){
 
                     // add the selected chinaHidden card to the playerHand array
-                    if (multiplayer.localPlayer == player){
+                    if (multiplayer.localPlayer === player){
                         chinaHidden[i].hidden = false
                     }
                     chinaHidden[i].state="player"
@@ -467,7 +629,7 @@ Item {
             }
         }
         else if(chinaAccessible){
-            for (var i = 0; i < china.length; i ++){
+            for (i = 0; i < china.length; i ++){
                 if(china[i].entityId === cardId){
                     china[i].width = china[i].originalWidth
                     china[i].height = china[i].originalHeight
@@ -478,7 +640,7 @@ Item {
                 }
             }
         }
-        else {for (var i = 0; i < hand.length; i ++){
+        else {for (i = 0; i < hand.length; i ++){
                 if(hand[i].entityId === cardId){
                     hand[i].width = hand[i].originalWidth
                     hand[i].height = hand[i].originalHeight
@@ -585,8 +747,8 @@ Item {
     function scaleHand(scale){
         zoom = scale
         //if(!chinaAccessible && !chinaHiddenAccessible){
-            playerHand.height = playerHand.originalHeight * zoom
-            playerHand.width = playerHand.originalWidth * zoom
+        playerHand.height = playerHand.originalHeight * zoom
+        playerHand.width = playerHand.originalWidth * zoom
         //}
         for (var i = 0; i < hand.length; i ++){
             hand[i].width = hand[i].originalWidth * zoom
@@ -610,7 +772,7 @@ Item {
             // return a random valid card from the array
             var randomIndex = Math.floor(Math.random() * (valids.length))
             for(var i=0; i<valids.length;i++){
-                if(valids[i].variationType==valids[randomIndex].variationType){
+                if(valids[i].variationType===valids[randomIndex].variationType){
                     validIds.push(valids[i].entityId)
                 }
             }
@@ -665,7 +827,7 @@ Item {
                 hand[i].hidden= false
                 china.splice(index,1,hand[i])
                 temp.state ="player"
-                temp.hidden=multiplayer.localPlayer == player? false:true
+                temp.hidden=multiplayer.localPlayer === player? false:true
                 hand.splice(i,1,temp)
 
 
@@ -740,3 +902,4 @@ Item {
         NumberAnimation { easing.type: Easing.InOutQuad; duration: 400 }
     }
 }
+
