@@ -179,7 +179,7 @@ Item {
             return "../../assets/img/PlayerHand3.png"
         if(gameLogic.firstRound && multiplayer.localPlayer === player)
             return ""
-        var imagePath = multiplayer.activePlayer === player && !gameLogic.acted? "../../assets/img/PlayerHand2.png" : "../../assets/img/PlayerHand1.png"
+        var imagePath = multiplayer.activePlayer === player && !gameLogic.acted && !gameLogic.firstRound? "../../assets/img/PlayerHand2.png" : "../../assets/img/PlayerHand1.png"
         return imagePath
     }
 
@@ -242,7 +242,7 @@ Item {
 
             card.rotation = hand.length>0? cardAngle-28:cardAngle
             card.y = hand.length>0 ?-Math.sin(Math.sin((cardAngle-23)*3.14/180))*card.height/1.1 -originalHeight/1.4:Math.abs(cardAngle) * 1.5
-            card.x = hand.length>0 ?cardX - originalWidth/4:cardX
+            card.x = hand.length>0 ?cardX - originalWidth/3:cardX
             card.z = hand.length>0 ?i -50 + playerHandImage.z:i +50 + playerHandImage.z
 
         }
@@ -257,9 +257,10 @@ Item {
             handWidth = offset * (chinaHidden.length - 1) + card.originalWidth * zoom
             // x value depending on the array position
             cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
+
             card.rotation = hand.length>0? cardAngle-28:cardAngle
             card.y = hand.length>0 ?card.y = (-Math.sin(Math.sin((cardAngle-23)*3.14/180))*card.height/1.1 -originalHeight/1.4)-5:(Math.abs(cardAngle) * 1.5)-5
-            card.x = hand.length>0 ?cardX - originalWidth/5:cardX
+            card.x = hand.length>0 ?cardX - originalWidth/3:cardX
             card.z = hand.length>0 ?i -100 + playerHandImage.z:i +40 + playerHandImage.z
         }
     }
@@ -523,6 +524,14 @@ Item {
         }
     }
 
+    function exchangeHandAndChinaIndex(handIndex,chinaIndex){
+        var temp=hand[handIndex]
+        hand.splice(handIndex,1,china[chinaIndex])
+        hand[handIndex].state="player"
+        china.splice(chinaIndex,1,temp)
+        china[chinaIndex].state="china"
+    }
+
     function exchangeShakingCard(){
         var shakingIndex=3
         //hand
@@ -537,14 +546,12 @@ Item {
             for(i=0;i<china.length;i++){
                 //find shaking card
                 if(china[i].shaking){
-                    var temp=hand[shakingIndex]
-                    hand.splice(shakingIndex,1,china[i])
+                    exchangeHandAndChinaIndex(shakingIndex,i)
                     hand[shakingIndex].shakeToggle()
-                    hand[shakingIndex].state="player"
-                    china.splice(i,1,temp)
                     china[i].shakeToggle()
-                    china[i].state="china"
                     neatFirstRound()
+                    var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                    multiplayer.sendMessage(gameLogic.messageExchangeCards, {handIndex: shakingIndex, chinaIndex: i,userId: userId})
                     return
                 }
             }
@@ -561,14 +568,12 @@ Item {
             for(i=0;i<hand.length;i++){
                 //find shaking card
                 if(hand[i].shaking){
-                    var temp=hand[i]
-                    hand.splice(i,1,china[shakingIndex])
+                    exchangeHandAndChinaIndex(i,shakingIndex)
                     hand[i].shakeToggle()
-                    hand[i].state="player"
-                    china.splice(shakingIndex,1,temp)
                     china[shakingIndex].shakeToggle()
-                    china[shakingIndex].state="china"
                     neatFirstRound()
+                    var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                    multiplayer.sendMessage(gameLogic.messageExchangeCards, {handIndex: i, chinaIndex: shakingIndex,userId: userId})
                     return
                 }
             }

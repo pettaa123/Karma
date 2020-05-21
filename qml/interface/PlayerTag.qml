@@ -95,6 +95,8 @@ EntityBase {
     anchors.centerIn: canvas
     source: getAvatar()
     locale: player && player.locale ? player.locale : ""
+    placeholderBackgroundColor: "transparent"
+    editBackgroundColor: "transparent"
   }
 
   Image {

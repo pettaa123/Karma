@@ -42,6 +42,7 @@ Item {
     property int messageMoveCardIdToHand: 18
     property int messageSetDone: 19
     property int messageSetFirstRound: 20
+    property int messageExchangeCards: 21
 
     // gets set to true when a message is received before the game state got synced. in that case, request a new game state
     property bool receivedMessageBeforeGameStateInSync: false
@@ -286,6 +287,32 @@ Item {
                 }
             }
 
+
+
+            else if (code == messageExchangeCards){
+                //message too late, exchange cant be acknowledged
+                if (!firstRound){
+                    multiplayer.leaderCode(function() {
+                        console.debug("sendGameSateToPlayer from messageSetDone")
+                        sendGameStateToPlayer(tempMessage.userId)
+                    })
+                    return
+                }
+
+                for (var i = 0; i < playerHands.children.length; i++) {
+                    if (playerHands.children[i].player.userId === tempMessage.userId){
+
+                        playerHands.children[i].exchangeHandAndChinaIndex(tempMessage.handIndex,tempMessage.chinaIndex)
+                        playerHands.children[i].hand[tempMessage.handIndex].hidden=true
+                        playerHands.children[i].china[tempMessage.chinaIndex].hidden=false
+                        playerHands.children[i].neatHand()
+                        playerHands.children[i].neatChina()
+                        break
+                    }
+                }
+
+            }
+
             else if (code == messageSetDone){
                 // if the message wasn't sent by the leader and
                 // if it wasn't sent by the active player, the message is invalid
@@ -381,6 +408,7 @@ Item {
                     return
                 }
                 firstRound = tempMessage.firstRoundBool
+                scaleHand(1.0)
                 gameLogic.startTurnTimer()
             }
 
@@ -727,10 +755,8 @@ Item {
 
         if(firstRound && multiplayer.activePlayer.connected){
             for (var i = 0; i < playerHands.children.length; i++) {
-                //endTurn if player is already done
                 if (playerHands.children[i].player === multiplayer.localPlayer){
                     playerHands.children[i].neatFirstRound()
-
                     break
                 }
             }
@@ -803,6 +829,7 @@ Item {
     // schedule AI to take over after 10 seconds if the connected player is inactive
     function turnTimedOut(){
 
+
         // clean up our UI
         timer.running = false
 
@@ -829,12 +856,12 @@ Item {
         }
 
         console.debug("turnTimedOut() acted: "+ acted + "myTurn: " + multiplayer.myTurn)
-        if (multiplayer.myTurn && !acted){
+        if (!acted){
             acted=true
-            scaleHand(1.0)
+
         }
 
-
+        scaleHand(1.0)
         // player timed out, so leader should take over
         multiplayer.leaderCode(function () {
             // if the player is in the process of chosing a color
@@ -1375,7 +1402,7 @@ Item {
 
     function getUserInterval(){
         if(gameLogic.firstRound){
-            return 10
+            return multiplayer.amLeader? 14 : 10
         }
         return multiplayer.myTurn && !multiplayer.amLeader ? 25 : 27
     }

@@ -114,13 +114,13 @@ SceneBase {
     // back button to leave scene
     ButtonBase {
         id: jokerButton
-        width: 50
-        height: 50
+        width: 80
+        height: 80
         buttonImage.source: "../../assets/img/Joker.png"
         anchors.right: gameWindowAnchorItem.right
         anchors.rightMargin: 10
         anchors.bottom: backButton.top
-        anchors.bottomMargin: 18
+        anchors.bottomMargin: 75
         //anchors.bottom: gameWindowAnchorItem.bottom
         //anchors.bottomMargin: 5
         onClicked: {
