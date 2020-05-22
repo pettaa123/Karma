@@ -886,7 +886,7 @@ Item {
         scaleHand(1.0)
         initialized = false
         receivedMessageBeforeGameStateInSync = false
-
+        window.state = "menu"
     }
 
     function joinGame(room){
