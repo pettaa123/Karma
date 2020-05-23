@@ -56,6 +56,8 @@ SOURCES       = main.cpp qrc_resources_user.cpp
 OBJECTS       = main.o \
 		qrc_resources_user.o
 DIST          = qml/game/Removed.qml \
+		qml/scenes/CardScene.qml \
+		qml/scenes/InstructionScene.qml \
 		../Felgo/Felgo/gcc_64/mkspecs/features/spec_pre.prf \
 		../Felgo/Felgo/gcc_64/mkspecs/common/unix.conf \
 		../Felgo/Felgo/gcc_64/mkspecs/common/linux.conf \

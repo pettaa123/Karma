@@ -59,4 +59,6 @@ ios {
 }
 
 DISTFILES += \
-    qml/game/Removed.qml
+    qml/game/Removed.qml \
+    qml/scenes/CardScene.qml \
+    qml/scenes/InstructionScene.qml
