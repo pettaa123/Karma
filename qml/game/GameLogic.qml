@@ -54,6 +54,13 @@ Item {
         source: "../../assets/snd/juhu.wav"
     }
 
+    //knock sound
+    SoundEffect {
+        volume: 0.5
+        id: knockSound
+        source: "../../assets/snd/knock.wav"
+    }
+
     // sound when drawing depot
     SoundEffect {
         volume: 0.5
@@ -674,12 +681,24 @@ Item {
 
     // play a random valid card from the playerHand of the active player
     function playRandomValids() {
+
         // find the playerHand of the active player
         for (var i = 0; i < playerHands.children.length; i++) {
             if (playerHands.children[i].player === multiplayer.activePlayer && !playerHands.children[i].player.done){
 
                 //if chinaHidden dont mark valid, take a card and check if its valid, if not take depot and just chosen card
-                var validCardIds= playerHands.children[i].chinaHiddenAccessible? playerHands.children[i].checkFirstValid(): playerHands.children[i].randomValidIds()
+                var validCardIds = []
+
+                if(Math.random()>0.75){
+                    console.debug("play random")
+                    validCardIds= playerHands.children[i].chinaHiddenAccessible? playerHands.children[i].checkFirstValid(): playerHands.children[i].randomValidIds()
+                }
+                else{
+                    console.debug("play smart")
+                    validCardIds= playerHands.children[i].chinaHiddenAccessible? playerHands.children[i].checkFirstValid(): playerHands.children[i].smartValidIds()
+                }
+
+
                 var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
                 // deposit the valid card or draw depot
                 if (!validCardIds && playerHands.children[i].chinaHiddenAccessible){
@@ -847,6 +866,8 @@ Item {
             if(multiplayer.activePlayer.userId===multiplayer.localPlayer.userId){
                 turnStarted(multiplayer.localPlayer.userId)
             }
+
+            knockSound.play()
 
             return
         }
@@ -1131,8 +1152,11 @@ Item {
         multiplayer.leaderCode(function () {
             for (var i = 0; i < playerHands.children.length; i++) {
                 // start the hand for each player
+
                 playerHands.children[i].startHand(initialized)
-                playerHands.children[i].optimizeChina()
+                if(!multiplayer.players[i].connected){
+                    playerHands.children[i].optimizeChina()
+                }
                 playerHands.children[i].neatHand()
                 playerHands.children[i].neatChina()
             }

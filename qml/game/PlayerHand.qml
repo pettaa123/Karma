@@ -788,6 +788,35 @@ Item {
         }
     }
 
+    //returns worst hand index if val is better
+    function worstIndex(valids){
+        var worst=13
+        var index=111
+        for(var i=0;i<valids.length;i++){
+            if (valids[i].val<worst){
+                worst=valids[i].val
+                index=i
+            }
+        }
+        return index
+    }
+
+    // get a random valid card id from the playerHand
+    function smartValidIds(){
+        var validIds = []
+        var valids = getValidCards()
+        if (valids.length > 0){
+            var index=worstIndex(valids)
+            for(var i=0; i<valids.length;i++){
+                if(valids[i].variationType===valids[index].variationType){
+                    validIds.push(valids[i].entityId)
+                }
+            }
+            return validIds
+        }
+        return undefined
+    }
+
     // get a random valid card id from the playerHand
     function checkFirstValid(){
         var validIds = []
