@@ -16,11 +16,11 @@ GameWindow {
     width: 960
 
     // generate your own license key which includes the OneSignal Push Notification plugin & the Facebook plugin at https://felgo.com/licenseKey
-    // licenseKey: Constants.licenseKey
-    title: gameNetwork.user.deviceId + " - " + gameNetwork.user.name
+    licenseKey: Constants.licenseKey
+    //title: gameNetwork.user.deviceId + " - " + gameNetwork.user.name
 
     // this is used in the sharing dialog, rating dialog
-    //readonly property string gameTitle: "Shithead!"
+    readonly property string gameTitle: "Shithead"
 
     // references to Shithead scenes (loaded with sceneLoader)
     property MenuScene menuScene: sceneLoader.item && sceneLoader.item.menuScene
@@ -120,7 +120,7 @@ GameWindow {
         fewRoomsThreshold: 3
         joinRankingIncrease: 200
         enableLateJoin: true // allow joining a running match after it was started (if the match has non-human (AI) players to fill the game
-        appVersion: "0.0.1" //comment
+        appVersion: "1" //comment
         latencySimulationTime: system.desktopPlatform && !system.publishBuild ? 2000 : 0 // allows to simulate latency values on Desktop. for published games, always set this to 0!
 
         //appKey: Constants.appKey
