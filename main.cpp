@@ -16,6 +16,10 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     felgo.initialize(&engine);
 
+    // Set an optional license key from project file
+    // This does not work if using Felgo Live, only for Felgo Cloud Builds and local builds
+    felgo.setLicenseKey(PRODUCT_LICENSE_KEY);
+
     // use this during development
     // for PUBLISHING, use the entry point below
     felgo.setMainQmlFileName(QStringLiteral("qml/ShitheadMain.qml"));
