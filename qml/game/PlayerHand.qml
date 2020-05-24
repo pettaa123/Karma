@@ -231,6 +231,7 @@ Item {
         // calculate the card position and rotation in the hand and change the z order
         for (var i = 0; i < china.length; i ++){
             var card = china[i]
+
             // angle span for spread cards in hand
             var handAngle = 30 //40
             // card angle depending on the array position
@@ -244,6 +245,8 @@ Item {
             card.y = hand.length>0 ?-Math.sin(Math.sin((cardAngle-23)*3.14/180))*card.height/1.1 -originalHeight/1.4:Math.abs(cardAngle) * 1.5
             card.x = hand.length>0 ?cardX - originalWidth/3:cardX
             card.z = hand.length>0 ?i -50 + playerHandImage.z:i +50 + playerHandImage.z
+
+
 
         }
 
@@ -330,6 +333,16 @@ Item {
         }
     }
 
+    function unshakeAll()
+    {
+        for (var i = 0; i < hand.length; i ++){
+            if(hand[i].shaking)hand[i].shakeToggle()
+        }
+        for (i = 0; i < china.length; i ++){
+            if(china[i].shaking)china[i].shakeToggle()
+        }
+    }
+
     // organize the hand and spread the cards
     function neatHand(){
         // sort all cards by their natural order
@@ -361,6 +374,8 @@ Item {
             card.y = Math.abs(cardAngle) * 1.5
             card.x = cardX
             card.z = i +50 + playerHandImage.z
+
+
         }
 
     }
@@ -790,7 +805,7 @@ Item {
 
     //returns worst hand index if val is better
     function worstIndex(valids){
-        var worst=13
+        var worst=14
         var index=111
         for(var i=0;i<valids.length;i++){
             if (valids[i].val<worst){
@@ -875,7 +890,7 @@ Item {
 
     //returns worst hand index if val is better
     function worstChinaIndex(){
-        var worst=13
+        var worst=14
         var index=111
         for(var i=0;i<china.length;i++){
             if (china[i].val<worst){

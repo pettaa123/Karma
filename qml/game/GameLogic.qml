@@ -15,7 +15,7 @@ Item {
     // turn time for AI players, in milliseconds
     property int aiTurnTime: 1000 //1200
     // restart the game at the end after a few seconds
-    property int restartTime: 8000
+    property int restartTime: 9000
     property bool acted: false
     property bool gameOver: false
 
@@ -68,6 +68,16 @@ Item {
         source: "../../assets/snd/shit.wav"
     }
 
+    Timer {
+        id: waitTimerScaleHand
+        repeat:false
+        interval:100
+        onTriggered: {
+            waitTimerScaleHand.stop()
+            scaleHand(1.6)
+        }
+    }
+
     // timer decreases the remaining turn time for the active player
     Timer {
         id: timer
@@ -93,12 +103,23 @@ Item {
         }
     }
 
+    Timer {
+        id:waitTimerGameOver
+        repeat: false
+        interval: 1500
+        onTriggered: {
+            waitTimerGameOver.stop()
+            gameScene.gameOver.visible = true
+        }
+    }
+
     // AI takes over after a few seconds if the player is not connected
     Timer {
         id: aiTimeOut
         interval: aiTurnTime
         repeat: false
         onTriggered: {
+            aiTimeOut.stop()
             gameLogic.executeAIMove()
             //endTurn()
         }
@@ -828,7 +849,8 @@ Item {
         }
 
         // zoom in on the hand of the active local player
-        if (multiplayer.myTurn){scaleHand(1.6)
+        if (multiplayer.myTurn){
+            waitTimerScaleHand.start()
         }
         // mark the valid card options
         //markValid()
@@ -845,6 +867,16 @@ Item {
         })
     }
 
+    function unshakeCards()
+    {
+        for (var i = 0; i<playerHands.children.length;i++){
+            if(playerHands.children[i].player.userId===multiplayer.localPlayer.userId){
+                playerHands.children[i].unshakeAll()
+                return
+            }
+        }
+    }
+
     // schedule AI to take over after 10 seconds if the connected player is inactive
     function turnTimedOut(){
 
@@ -853,6 +885,7 @@ Item {
         timer.running = false
 
         if(gameLogic.firstRound){
+            unshakeCards()
             firstRound=false
 
             // player timed out, so leader should take over
@@ -1327,13 +1360,15 @@ Item {
         var playerCount=4
         var doneCount=0
         for (var i = 0; i < playerHands.children.length; i++) {
-            if (playerHands.children[i].done){ doneCount++}
-        }
-        if(doneCount>=playerCount-1){
-            return true
-        }
-        if(multiplayer.singlePlayer && doneCount>=1){
-            return true
+            if (playerHands.children[i].done){
+                doneCount++
+                if(multiplayer.singlePlayer && playerHands.children[i].player.userId===multiplayer.localPlayer.userId){
+                    return true
+                }
+            }
+            if(doneCount>=playerCount-1){
+                return true
+            }
         }
         return false
     }
@@ -1377,8 +1412,8 @@ Item {
         calculatePoints(userId)
 
         // show the gameOver message with the winner and score
-        gameScene.gameOver.visible = true
-
+        //gameScene.gameOver.visible = true
+        waitTimerGameOver.start()
 
         // add points to MultiplayerUser score of the winner
         var currentHand = getHand(multiplayer.localPlayer.userId)
