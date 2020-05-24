@@ -241,10 +241,10 @@ Item {
             // x value depending on the array position
             var cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
 
-            card.rotation = hand.length>0? cardAngle-28:cardAngle
-            card.y = hand.length>0 ?-Math.sin(Math.sin((cardAngle-23)*3.14/180))*card.height/1.1 -originalHeight/1.4:Math.abs(cardAngle) * 1.5
-            card.x = hand.length>0 ?cardX - originalWidth/3:cardX
-            card.z = hand.length>0 ?i -50 + playerHandImage.z:i +50 + playerHandImage.z
+            card.rotation = hand.length==0 && player.userId===multiplayer.localPlayer.userId? cardAngle:cardAngle-28
+            card.y = hand.length==0 && player.userId===multiplayer.localPlayer.userId?Math.abs(cardAngle) * 1.5:-Math.sin(Math.sin((cardAngle-23)*3.14/180))*card.height/1.1 -originalHeight/1.4
+            card.x = hand.length==0 && player.userId===multiplayer.localPlayer.userId? cardX:cardX - originalWidth/3
+            card.z = hand.length==0 && player.userId===multiplayer.localPlayer.userId?i +50 + playerHandImage.z:i -50 + playerHandImage.z
 
 
 
@@ -261,10 +261,10 @@ Item {
             // x value depending on the array position
             cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
 
-            card.rotation = hand.length>0? cardAngle-28:cardAngle
-            card.y = hand.length>0 ?card.y = (-Math.sin(Math.sin((cardAngle-23)*3.14/180))*card.height/1.1 -originalHeight/1.4)-5:(Math.abs(cardAngle) * 1.5)-5
-            card.x = hand.length>0 ?cardX - originalWidth/3:cardX
-            card.z = hand.length>0 ?i -100 + playerHandImage.z:i +40 + playerHandImage.z
+            card.rotation = hand.length==0 && player.userId===multiplayer.localPlayer.userId ? cardAngle : cardAngle-28
+            card.y = hand.length==0 && player.userId===multiplayer.localPlayer.userId ? (Math.abs(cardAngle) * 1.5)-5:(-Math.sin(Math.sin((cardAngle-23)*3.14/180))*card.height/1.1 -originalHeight/1.4)-5
+            card.x = hand.length==0 && player.userId===multiplayer.localPlayer.userId ? cardX : cardX - originalWidth/3
+            card.z = hand.length==0 && player.userId===multiplayer.localPlayer.userId ? i +40 + playerHandImage.z : i -100 + playerHandImage.z
         }
     }
 
@@ -565,7 +565,7 @@ Item {
                     hand[shakingIndex].shakeToggle()
                     china[i].shakeToggle()
                     neatFirstRound()
-                    var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                    var userId = multiplayer.localPlayer ? multiplayer.localPlayer.userId : 0
                     multiplayer.sendMessage(gameLogic.messageExchangeCards, {handIndex: shakingIndex, chinaIndex: i,userId: userId})
                     return
                 }
@@ -587,7 +587,7 @@ Item {
                     hand[i].shakeToggle()
                     china[shakingIndex].shakeToggle()
                     neatFirstRound()
-                    var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
+                    var userId = multiplayer.localPlayer ? multiplayer.localPlayer.userId : 0
                     multiplayer.sendMessage(gameLogic.messageExchangeCards, {handIndex: i, chinaIndex: shakingIndex,userId: userId})
                     return
                 }

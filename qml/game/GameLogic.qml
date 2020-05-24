@@ -254,6 +254,7 @@ Item {
 
                     // join a game which is already over
                     gameOver = tempMessage.gameOver
+                    firstRound = tempMessage.firstRound
                     gameScene.gameOver.visible = gameOver
                     timer.running = !gameOver
 
@@ -1048,6 +1049,7 @@ Item {
 
         message.skipped = depot.skipped
         message.gameOver = gameOver
+        message.firstRound = firstRound
 
 
         //SHITHEAD
@@ -1298,11 +1300,7 @@ Item {
 
     // end the turn of the active player
     function endTurn(){
-        console.debug("ENDTURN REACHED BY PLAYER:")
-        console.debug(multiplayer.localPlayer.userId)
-        console.debug("ActivePlayer: " + multiplayer.activePlayer.userId)
-        // unmark all highlighted valid card options
-        //unmark()
+
         // scale down the hand of the active local player
         scaleHand(1.0)
 
@@ -1310,7 +1308,7 @@ Item {
         var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
         //check if the active player has won the game
         for (var i = 0; i < playerHands.children.length; i++) {
-            if (playerHands.children[i].player === multiplayer.activePlayer && !depot.skipped){
+            if (playerHands.children[i].player === multiplayer.activePlayer && !depot.skipped && !playerHands.children[i].done){
                 if(checkShithead()){
                     endGame()
                     multiplayer.sendMessage(messageEndGame, {userId: userId})

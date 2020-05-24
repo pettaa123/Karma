@@ -44,18 +44,31 @@ Item {
         printDeck()
     }
 
+
     // create the information for all cards
     function fillDeck(){
         var card
-        var order = 0
+
+        var upper_bound=13
+
+
+        var unique_random_numbers = []
+
+        while (unique_random_numbers.length < upper_bound) {
+            var random_number = Math.floor(Math.random()*(upper_bound));
+            if (unique_random_numbers.indexOf(random_number) == -1) {
+                // Yay! new random number
+                unique_random_numbers.push( random_number );
+            }
+        }
+
 
         // create karo, herz, pik and kreuz colored cards
         for (var i = 0; i < 13; i ++){
             // one 2-Ass value cards per color
             for (var j = 0; j < 4; j ++){
-                card = {variationType: types[i], cardColor: cardColor[j], points: 1, hidden: true, order: order, val: vals[i]}
+                card = {variationType: types[i], cardColor: cardColor[j], points: 1, hidden: true, order: unique_random_numbers[i]*4+j, val: vals[i]}
                 cardInfo.push(card)
-                order ++
             }
         }
     }
