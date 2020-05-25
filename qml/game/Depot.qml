@@ -17,6 +17,8 @@ Item {
     // holds temporary a card which was played second,third etc...
     property var multiple
 
+    property alias waitTimerRemoveDepot:  waitTimerRemoveDepot
+
 
     // sound effect plays createDwhen a player gets skipped
     SoundEffect {
@@ -60,6 +62,16 @@ Item {
         return false
     }
 
+    Timer {
+        id: waitTimerRemoveDepot
+        repeat: false
+        interval: 500
+        onTriggered: {
+            waitTimerRemoveDepot.stop()
+            removeDepot()
+        }
+    }
+
     // put cards away if 10 was played
     function removeDepot(){
         for (var i = 0; i < deck.cardDeck.length; i ++){
@@ -68,13 +80,12 @@ Item {
             }
         }
         checkLast=false
-
-        //sync last
-        //var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-        //multiplayer.sendMessage(gameLogic.messageResetCurrentAndLast, {userId: userId})
+        depot.multiple=undefined
 
         last=undefined
         current=undefined
+
+        gameLogic.turnStarted(multiplayer.activePlayer)
     }
 
     function removeCard(id){

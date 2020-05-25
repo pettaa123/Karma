@@ -235,9 +235,18 @@ Item {
             // angle span for spread cards in hand
             var handAngle = 30 //40
             // card angle depending on the array position
-            var cardAngle = handAngle / china.length * (i + 0.5) - handAngle / 2
-            //offset of all cards + one card width
-            var handWidth = offset * (china.length - 1) + card.originalWidth * zoom
+            if(china.length!==2){
+                var cardAngle = handAngle / china.length * (i + 0.5) - handAngle / 2
+                //offset of all cards + one card width
+                var handWidth = offset * (china.length - 1) + card.originalWidth * zoom
+            }
+            else{
+                cardAngle = handAngle / 3 * (i + 0.5) - handAngle / 2
+                //offset of all cards + one card width
+                handWidth = offset * (3 - 1) + card.originalWidth * zoom
+            }
+            // x value depending on the array position
+            cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
             // x value depending on the array position
             var cardX = (playerHand.originalWidth * zoom - handWidth) / 2 + (i * offset)
 
@@ -245,9 +254,6 @@ Item {
             card.y = hand.length==0 && player.userId===multiplayer.localPlayer.userId?Math.abs(cardAngle) * 1.5:-Math.sin(Math.sin((cardAngle-23)*3.14/180))*card.height/1.1 -originalHeight/1.4
             card.x = hand.length==0 && player.userId===multiplayer.localPlayer.userId? cardX:cardX - originalWidth/3
             card.z = hand.length==0 && player.userId===multiplayer.localPlayer.userId?i +50 + playerHandImage.z:i -50 + playerHandImage.z
-
-
-
         }
 
         for (i = 0; i < chinaHidden.length; i ++){
@@ -612,24 +618,22 @@ Item {
     }
 
     function moveFromChinaHiddenToHand(cardId){
-        if (chinaHiddenAccessible){
-            for (var i = 0; i < chinaHidden.length; i ++){
-                if(chinaHidden[i].entityId === cardId){
+        for (var i = 0; i < chinaHidden.length; i ++){
+            if(chinaHidden[i].entityId === cardId){
 
-                    // add the selected chinaHidden card to the playerHand array
-                    if (multiplayer.localPlayer === player){
-                        chinaHidden[i].hidden = false
-                    }
-                    chinaHidden[i].state="player"
-                    chinaHidden[i].width = chinaHidden[i].originalWidth
-                    chinaHidden[i].height = chinaHidden[i].originalHeight
-                    hand.push(chinaHidden[i])
-                    chinaHidden.splice(i, 1)
-                    resetChinaHiddenAccessible()
-                    break
+                // add the selected chinaHidden card to the playerHand array
+                if (multiplayer.localPlayer === player){
+                    chinaHidden[i].hidden = false
                 }
-                //neatHand()
+                chinaHidden[i].state="player"
+                chinaHidden[i].width = chinaHidden[i].originalWidth
+                chinaHidden[i].height = chinaHidden[i].originalHeight
+                hand.push(chinaHidden[i])
+                chinaHidden.splice(i, 1)
+                resetChinaHiddenAccessible()
+                break
             }
+            //neatHand()
         }
     }
 
