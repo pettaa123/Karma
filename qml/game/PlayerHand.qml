@@ -919,7 +919,6 @@ Item {
             resetChinaAccessible()
             resetChinaHiddenAccessible()
         }
-        console.debug("activateChinaCheck: deck.cardsInStack: " + deck.cardsInStack)
         if (hand.length == 2 && deck.cardsInStack>0){
             return 1
         }

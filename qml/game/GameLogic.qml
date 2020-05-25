@@ -1171,7 +1171,7 @@ Item {
 
     // the leader hands out the cards to the other players
     function joker(){
-        if (multiplayer.myTurn && !depot.skipped && initialized &&!acted &&!firstRound) {
+        if (multiplayer.myTurn && !depot.skipped && initialized &&!acted &&!firstRound && depot.current) {
             var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
             multiplayer.sendMessage(messageMoveDepotToHand, {userId: userId})
             takeDepot(userId)
@@ -1179,7 +1179,10 @@ Item {
             gameLogic.endTurn()
             return true
         }
-        else return false
+        else{
+            gameScene.jokerButton.shaker.start()
+            return false
+        }
     }
 
     // the leader hands out the cards to the other players
@@ -1459,7 +1462,7 @@ Item {
 
     function getUserInterval(){
         if(gameLogic.firstRound){
-            return multiplayer.amLeader? 14 : 10
+            return multiplayer.amLeader? 14 : 13
         }
         return multiplayer.myTurn && !multiplayer.amLeader ? 25 : 27
     }

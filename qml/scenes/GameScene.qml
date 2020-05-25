@@ -128,7 +128,20 @@ SceneBase {
             if(gameLogic.joker())            jokerButton.visible=false
         }
         z:500
+
+        property alias shaker: shaker
+
+        SequentialAnimation {
+            alwaysRunToEnd: true
+            loops:2
+            id: shaker
+            running: false
+            NumberAnimation { target: jokerButton; property: "rotation";to: rotation+3; duration: 50 }
+            NumberAnimation { target: jokerButton; property: "rotation";to: rotation-3; duration: 50 }
+            NumberAnimation { target: jokerButton; property: "rotation";to: rotation; duration: 50 }
+        }
     }
+
 
 
     // button to finish the game
