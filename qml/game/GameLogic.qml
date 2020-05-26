@@ -43,6 +43,7 @@ Item {
     property int messageSetDone: 19
     property int messageSetFirstRound: 20
     property int messageExchangeCards: 21
+    property int messageIThinkImDone: 22
 
     // gets set to true when a message is received before the game state got synced. in that case, request a new game state
     property bool receivedMessageBeforeGameStateInSync: false
@@ -72,9 +73,10 @@ Item {
         id: waitTimerScaleHand
         repeat:false
         interval:100
+        property var scale
         onTriggered: {
             waitTimerScaleHand.stop()
-            scaleHand(1.6)
+            scaleHand(scale)
         }
     }
 
@@ -150,7 +152,7 @@ Item {
     Timer {
         id: waitBeforeNewTurn
         repeat:false
-        interval: 2000
+        interval: 2500
         onTriggered: {
             waitBeforeNewTurn.stop()
             multiplayer.triggerNextTurn()
@@ -277,8 +279,8 @@ Item {
                     })
                     return
                 }
-                takeDepot(tempMessage.userId,tempMessage.interval+1000)
                 moveFromChinaHiddenToHand(tempMessage.userId,tempMessage.cardId,tempMessage.interval)
+                takeDepot(tempMessage.userId,tempMessage.interval+1000)
             }
 
 
@@ -287,7 +289,6 @@ Item {
                 //message too late, exchange cant be acknowledged
                 if (!firstRound){
                     multiplayer.leaderCode(function() {
-                        console.debug("sendGameSateToPlayer from messageSetDone")
                         sendGameStateToPlayer(tempMessage.userId)
                     })
                     return
@@ -332,6 +333,35 @@ Item {
                 }
             }
 
+            else if (code == messageIThinkImDone){
+
+                if (multiplayer.activePlayer && multiplayer.activePlayer.userId !== tempMessage.userId){
+                    multiplayer.leaderCode(function() {
+                        console.debug("sendGameSateToPlayer from messageIThinkImDone")
+                        sendGameStateToPlayer(tempMessage.userId)
+                    })
+                    return
+                }
+
+                multiplayer.leaderCode(function() {
+                    //leader checks if player is really done
+                    for (i = 0; i < playerHands.children.length; i++) {
+                        if (playerHands.children[i].player.userId === tempMessage.userId){
+                            if(playerHands.children[i].checkDone()){
+                                multiplayer.sendMessage(messageSetDone, {userId: tempMessage.userId})
+                            }
+                            else{
+                                sendGameStateToPlayer(tempMessage.userId)
+                            }
+
+                            break
+                        }
+                    }
+                })
+
+
+            }
+
             else if (code == messageRemoveDepot){
                 // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
@@ -342,7 +372,7 @@ Item {
                     })
                     return
                 }
-                removeDepot(tempMessage.interval)
+                removeDepot(tempMessage.interval,false)
             }
 
             // move card to depot
@@ -364,7 +394,7 @@ Item {
             else if (code == messageMoveCardDepot){
                 // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
+                if (multiplayer.activePlayer && multiplayer.activePlayer.userId !== tempMessage.userId){
                     multiplayer.leaderCode(function() {
                         console.debug("sendGameSateToPlayer from messageMoveCardDepot")
                         sendGameStateToPlayer(tempMessage.userId)
@@ -373,28 +403,12 @@ Item {
                 }
                 depositCard(tempMessage.cardId)
             }
-            // sync skipped state
-            //else if (code == messageSetSkipped){
-            //    // if there is an active player with a different userId, the message is invalid
-            //    // the message was probably sent after the leader triggered the next turn
-            //    if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
-            //        multiplayer.leaderCode(function() {
-            //            console.debug("sendGameSateToPlayer from messageSetSkipped")
-            //            sendGameStateToPlayer(tempMessage.userId)
-            //        })
-            //        return
-            //    }
-            //
-            //    if(multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
-            //        depot.skipped = tempMessage.skipped
-            //    }
-            //}
 
             // sync skipped state
             else if (code == messageSetFirstRound){
                 // if there is an active player with a different userId, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId){
+                if (multiplayer.activePlayer && multiplayer.activePlayer.userId !== tempMessage.userId){
                     multiplayer.leaderCode(function() {
                         console.debug("sendGameSateToPlayer from messageSetSkipped")
                         sendGameStateToPlayer(tempMessage.userId)
@@ -413,8 +427,8 @@ Item {
                 // if it wasn't a desktop test and
                 // if it wasn't sent by the active player, the message is invalid
                 // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.leaderPlayer.userId != tempMessage.userId &&
-                        multiplayer.activePlayer && multiplayer.activePlayer.userId != tempMessage.userId && !tempMessage.test){
+                if (multiplayer.leaderPlayer.userId !== tempMessage.userId &&
+                        multiplayer.activePlayer && multiplayer.activePlayer.userId !== tempMessage.userId && !tempMessage.test){
                     return
                 }
 
@@ -435,7 +449,7 @@ Item {
             else if (code == messageTriggerTurn){
                 multiplayer.leaderCode(function() {
                     // the leader only stops the turn early if the requesting user is still the active player
-                    if (multiplayer.activePlayer && multiplayer.activePlayer.userId == tempMessage){
+                    if (multiplayer.activePlayer && multiplayer.activePlayer.userId === tempMessage){
                         triggerNewTurn()
                     }
                     // if the requesting user is no longer active, it means that he timed out according to the leader
@@ -497,7 +511,7 @@ Item {
                 return
             }
             console.debug("onCardSelected: acted: "+ acted + "myTurn: " + multiplayer.myTurn + "depot.skipped: " + depot.skipped)
-            if (multiplayer.myTurn && !depot.skipped && initialized &&!acted) {
+            if (multiplayer.myTurn && !depot.skipped && initialized && !acted) {
                 // deposit the valid card
                 if (depot.validCard(cardId)){
                     waitInputTimer.stop()
@@ -515,19 +529,23 @@ Item {
                         }
                     }
 
-                    for(var i=0;i<playerHands.children.length;i++){
+                    for(i=0;i<playerHands.children.length;i++){
                         if (playerHands.children[i].player.userId===multiplayer.localPlayer.userId){
                             if(playerHands.children[i].checkDone()){
-                                playerHands.children[i].setDone()
-                                multiplayer.sendMessage(messageSetDone, {userId: multiplayer.localPlayer.userId})
+                                if(multiplayer.amLeader){
+                                    multiplayer.sendMessage(messageSetDone, {userId: multiplayer.activePlayer.userId})
+                                }
+                                else{
+                                    multiplayer.sendMessage(messageIThinkImDone, {userId: multiplayer.activePlayer.userId})
+                                }
                                 break
                             }
                         }
                     }
 
                     if(depot.fourSames()){
-                        multiplayer.sendMessage(messageRemoveDepot, {userId: userId, interval:1400})
-                        removeDepot(1500)
+                        multiplayer.sendMessage(messageRemoveDepot, {userId: multiplayer.localPlayer.userId, interval:1400})
+                        removeDepot(1500,true)
                         return
                     }
 
@@ -546,7 +564,8 @@ Item {
                         playerHands.children[i].moveFromChinaHiddenToHand(playerHands.children[i].player.userId,cardId,1000)
                         var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
                         multiplayer.sendMessage(messageMoveCardIdToHand, {cardId: cardId, userId: userId, interval: 1500})
-                        depot.takeDepot(userId,2500)
+                        takeDepot(userId,2500)
+                        acted=true
                         return
                     }
                 }
@@ -581,8 +600,9 @@ Item {
         }
     }
 
-    function removeDepot(interval){
+    function removeDepot(interval, startTurn){
         depot.waitTimerRemoveDepot.interval=interval
+        depot.waitTimerRemoveDepot.startTurn=startTurn
         depot.waitTimerRemoveDepot.restart()
     }
 
@@ -611,7 +631,7 @@ Item {
                         }
                     }
                 }
-                else {for (var j = 0; j < playerHands.children[i].hand.length; j ++){
+                else {for (j = 0; j < playerHands.children[i].hand.length; j ++){
                         if (playerHands.children[i].hand[j].variationType===entityManager.getEntityById(cardId).variationType){
                             validIds.push(playerHands.children[i].hand[j].entityId)
                         }
@@ -664,6 +684,7 @@ Item {
                 if (!multiplayer.activePlayer || !multiplayer.activePlayer.connected && depot.current){
                     depot.current.hidden = false
                 }
+                break
             }
         }
     }
@@ -676,6 +697,7 @@ Item {
             // find the playerHand for the active player
             // if the selected card is in the playerHand of the active player
             playerHands.children[i].activateChinaCheck()
+            console.debug("to deposit card is in hand: "+playerHands.children[i].inHand(cardId))
             if (playerHands.children[i].inHand(cardId)){
                 // remove and deposit the card
                 playerHands.children[i].removeFromHand(cardId)
@@ -736,7 +758,7 @@ Item {
                 }
                 if(depot.fourSames()){
                     multiplayer.sendMessage(messageRemoveDepot, {userId: userId, interval:1400})
-                    removeDepot(1500)
+                    removeDepot(1500,true)
                     return
                 }
                 break
@@ -821,7 +843,7 @@ Item {
                 playerHands.children[i].activateChinaCheck()
 
                 //if chinaHidden dont mark valid, take a card and check if its valid, if not take depot and just chosen card
-               if(!playerHands.children[i].chinaHiddenAccessible){//if china hidden accessible wait for user to select a card
+                if(!playerHands.children[i].chinaHiddenAccessible){//if china hidden accessible wait for user to select a card
                     var validCardIds= playerHands.children[i].randomValidIds()
                     if(!validCardIds){
                         acted=true
@@ -838,7 +860,8 @@ Item {
 
         // zoom in on the hand of the active local player
         if (multiplayer.myTurn){
-            waitTimerScaleHand.start()
+            waitTimerScaleHand.scale=1.6
+            waitTimerScaleHand.restart()
         }
         // mark the valid card options
         //markValid()
@@ -879,9 +902,7 @@ Item {
             // player timed out, so leader should take over
             multiplayer.leaderCode(function () {
                 var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                // if the player is in the process of chosing a color
                 multiplayer.sendMessage(messageSetFirstRound,{firstRoundBool: false, userId: userId})
-                //multiplayer.triggerNextTurn()//call directly to have userID as parameter
             })
 
             if(multiplayer.activePlayer.userId===multiplayer.localPlayer.userId){
@@ -893,7 +914,7 @@ Item {
             return
         }
 
-        if(waitBeforeNewTurn.running || waitInputTimer.running || depot.waitTimerRemoveDepot.running || waitTimerTakeDepot.running || waitTimerGetCards){
+        if(waitBeforeNewTurn.running || waitInputTimer.running || depot.waitTimerRemoveDepot.running || waitTimerTakeDepot.running || waitTimerGetCards.running){
             return
         }
 
@@ -1018,10 +1039,10 @@ Item {
             for (var j = 0; j < playerHands.children[i].hand.length; j++){
                 currentPlayerHand.handIds[j] = playerHands.children[i].hand[j].entityId
             }
-            for (var j = 0; j < playerHands.children[i].china.length; j++){
+            for (j = 0; j < playerHands.children[i].china.length; j++){
                 currentPlayerHand.chinaIds[j] = playerHands.children[i].china[j].entityId
             }
-            for (var j = 0; j < playerHands.children[i].chinaHidden.length; j++){
+            for (j = 0; j < playerHands.children[i].chinaHidden.length; j++){
                 currentPlayerHand.chinaHiddenIds[j] = playerHands.children[i].chinaHidden[j].entityId
             }
             // add the hand information of a single player
@@ -1074,8 +1095,8 @@ Item {
             var currentUserId = playerHands.children[i].player.userId
             for (var j = 0; j < messageHands.length; j++){
                 var messageUserId = messageHands[j].userId
-                if (currentUserId == messageUserId){
-                    if (playerHands.children[i].hand.length != messageHands[j].handIds.length){
+                if (currentUserId === messageUserId){
+                    if (playerHands.children[i].hand.length !== messageHands[j].handIds.length){
                         // returns false if the amount of cards differentiate
                         console.debug("ERROR: game state differentiates from the one of the leader because of the different amount of cards - resync the game of this player!")
                         return false
@@ -1106,7 +1127,7 @@ Item {
     function getPlayer(userId){
         for (var i = 0; i < multiplayer.players.length; i++){
             console.debug("All UserIDs: " + multiplayer.players[i].userId + ", Looking for: " + userId)
-            if (multiplayer.players[i].userId == userId){
+            if (multiplayer.players[i].userId === userId){
                 return multiplayer.players[i]
             }
         }
@@ -1117,7 +1138,7 @@ Item {
     // find hand by userId
     function getHand(userId){
         for (var i = 0; i < playerHands.children.length; i++){
-            if (playerHands.children[i].player.userId == userId){
+            if (playerHands.children[i].player.userId === userId){
                 return playerHands.children[i]
             }
         }
@@ -1128,7 +1149,7 @@ Item {
     // update tag by player userId
     function updateTag(userId, level, highscore, rank){
         for (var i = 0; i < playerTags.children.length; i++){
-            if (playerHands.children[i].player.userId == userId){
+            if (playerHands.children[i].player.userId === userId){
                 playerTags.children[i].level = level
                 playerTags.children[i].highscore = highscore
                 playerTags.children[i].rank = rank
@@ -1163,7 +1184,6 @@ Item {
             multiplayer.sendMessage(messageMoveDepotToHand, {userId: userId, interval: 0})
             takeDepot(userId,0)
             acted=true
-            gameLogic.endTurn()
             return true
         }
         else{
@@ -1195,7 +1215,7 @@ Item {
             var currentUserId = playerHands.children[i].player.userId
             for (var j = 0; j < messageHands.length; j++){
                 var messageUserId = messageHands[j].userId
-                if (currentUserId == messageUserId){
+                if (currentUserId === messageUserId){
                     playerHands.children[i].syncHand(messageHands[j].handIds,messageHands[j].chinaIds,messageHands[j].chinaHiddenIds)
                 }
             }
@@ -1207,7 +1227,7 @@ Item {
         console.debug("initTags()")
         for (var i = 0; i < playerTags.children.length; i++){
             playerTags.children[i].initTag()
-            if (playerHands.children[i].player && playerHands.children[i].player.userId == multiplayer.localPlayer.userId){
+            if (playerHands.children[i].player && playerHands.children[i].player.userId === multiplayer.localPlayer.userId){
                 playerTags.children[i].getPlayerData(true)
             }
         }
@@ -1255,8 +1275,12 @@ Item {
             }
             depot.current   =undefined
             depot.last      =undefined
+            multiplayer.leaderCode(function () {
+                endTurn()
+            })
+            waitTimerScaleHand.scale=1.0
+            waitTimerScaleHand.restart()
 
-            gameLogic.endTurn()
         }
     }
 
@@ -1307,7 +1331,7 @@ Item {
     function scaleHand(scale){
         if (!scale) scale = multiplayer.myTurn && !depot.skipped ? 1.6 : 1.0
         for (var i = 0; i < playerHands.children.length; i++){
-            if (playerHands.children[i].player && playerHands.children[i].player.userId == multiplayer.localPlayer.userId){
+            if (playerHands.children[i].player && playerHands.children[i].player.userId === multiplayer.localPlayer.userId){
                 playerHands.children[i].scaleHand(scale)
                 playerHands.children[i].neatHand()
                 playerHands.children[i].neatChina()
@@ -1334,7 +1358,8 @@ Item {
                 }
                 //if 10 was last card start turn for same player
                 if(depot.current && depot.current.variationType === "10"){
-                    removeDepot(1500)
+                    multiplayer.sendMessage(messageRemoveDepot, {userId: userId, interval:1400})
+                    removeDepot(1500,true)
                     return
                 }
 
@@ -1401,16 +1426,16 @@ Item {
         // calculate the ranking of the other three players
         var tmpPlayers = [playerHands.children[0], playerHands.children[1], playerHands.children[2], playerHands.children[3]]
         tmpPlayers.sort(function(a, b) {
-            return a.hand.length - b.hand.length
+            return a.countCards() - b.countCards()
         })
 
         var shitheadHand = getHand(tmpPlayers[3].player.userId)
         if (shitheadHand) gameScene.gameOver.winner = shitheadHand.player
 
-        for (var i = 0; i < tmpPlayers.length; i++){
+        for (i = 0; i < tmpPlayers.length; i++){
             // get player by userId
             var tmpPlayer = getHand(tmpPlayers[i].player.userId)
-            if (tmpPlayer) tmpPlayer.score = points[i]
+            tmpPlayer.score = tmpPlayer && i===0? 5:points[i]
 
         }
     }
@@ -1437,7 +1462,7 @@ Item {
 
         var currentTag
         for (var i = 0; i < playerTags.children.length; i++){
-            if (playerTags.children[i].player.userId == multiplayer.localPlayer.userId){
+            if (playerTags.children[i].player.userId === multiplayer.localPlayer.userId){
                 currentTag = playerTags.children[i]
             }
         }
@@ -1445,7 +1470,7 @@ Item {
         // calculate level with new points and check if there was a level up
         var oldLevel = currentTag.level
         currentTag.getPlayerData(false)
-        if (oldLevel != currentTag.level){
+        if (oldLevel !== currentTag.level){
             gameScene.gameOver.level = currentTag.level
             gameScene.gameOver.levelText.visible = true
         } else {
@@ -1477,9 +1502,9 @@ Item {
 
     function getUserInterval(){
         if(gameLogic.firstRound){
-            return multiplayer.amLeader? 14 : 13
+            return multiplayer.amLeader? 14 : 12
         }
-        return multiplayer.myTurn && !multiplayer.amLeader ? 25 : 27
+        return multiplayer.myTurn && !multiplayer.amLeader ? 25 : 28
     }
 
 }

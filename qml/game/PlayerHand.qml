@@ -31,7 +31,7 @@ Item {
     //chinaHiddenAccessible if hand is empty
     property bool chinaHiddenAccessible: false
     //player done
-    property bool done
+    property bool done: false
 
     // sound effect plays when drawing a card
     SoundEffect {
@@ -939,10 +939,19 @@ Item {
     // calculate all card points in hand
     function points(){
         var points = 0
-        if(hand.length<1){
-            points=10
+        if(done){
+            points=3
         }
+
         return points
+    }
+
+    function countCards(){
+        var count=0
+        count+=hand.length
+        count+=china.length
+        count+=chinaHidden.length
+        return count
     }
 
     // animate the playerHand width and height

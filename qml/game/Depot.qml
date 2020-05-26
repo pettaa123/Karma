@@ -41,7 +41,7 @@ Item {
         var counter=1
         //if to be checked is of same value again, dig deeper
         var reached=true
-        while(toBeChecked.variationType==current.variationType && reached){
+        while(toBeChecked.variationType === current.variationType && reached){
             reached=false
             counter++
             if(counter===4){
@@ -66,9 +66,11 @@ Item {
         id: waitTimerRemoveDepot
         repeat: false
         interval: 500
+        property bool startTurn : false
         onTriggered: {
             waitTimerRemoveDepot.stop()
             removeDepot()
+            if(startTurn) gameLogic.turnStarted(multiplayer.activePlayer)
         }
     }
 
@@ -80,12 +82,11 @@ Item {
             }
         }
         checkLast=false
-        depot.multiple=undefined
+        multiple=undefined
 
         last=undefined
         current=undefined
 
-        gameLogic.turnStarted(multiplayer.activePlayer)
     }
 
     function removeCard(id){
