@@ -55,6 +55,9 @@ ios {
     QMAKE_INFO_PLIST = ios/Project-Info.plist
     OTHER_FILES += $$QMAKE_INFO_PLIST
 
+    ios_icon.files = $$files($$PWD/ios/Icon*.png)
+    QMAKE_BUNDLE_DATA += ios_icon
+
     # Uncomment for using iOS plugin libraries
     # FELGO_PLUGINS += facebook onesignal flurry admob chartboost soomla
 }
