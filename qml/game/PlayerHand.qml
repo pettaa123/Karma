@@ -742,31 +742,6 @@ Item {
     }
 
 
-    // unmark all cards in hand
-    //function unmark(){
-    //    for (var i = 0; i < hand.length; i ++){
-    //        hand[i].glowImage.visible = false
-    //        hand[i].updateCardImage()
-    //    }
-    //    if(chinaHiddenAccessible){
-    //        for (i = 0; i < chinaHidden.length; i ++){
-    //            chinaHidden[i].glowImage.visible = false
-    //            chinaHidden[i].updateCardImage()
-    //        }
-    //
-    //    }
-    //    if(chinaAccessible){
-    //        for (i = 0; i < china.length; i ++){
-    //            china[i].glowImage.visible = false
-    //            china[i].updateCardImage()
-    //        }
-    //    }
-    //}
-
-    function setFirstRound(){
-
-    }
-
     // scale the whole playerHand of the active localPlayer with a zoom factor
     function scaleHand(scale){
         zoom = scale
@@ -917,6 +892,11 @@ Item {
             setChinaAccessible()
             resetChinaHiddenAccessible()
             return 0
+        }
+
+        if (hand.length == 0 && china.length >0){
+            setChinaAccessible()
+            resetChinaHiddenAccessible()
         }
 
         if (hand.length != 0){

@@ -108,7 +108,7 @@ Item {
     Timer {
         id:waitTimerGameOver
         repeat: false
-        interval: 1500
+        interval: 1000
         onTriggered: {
             waitTimerGameOver.stop()
             gameScene.gameOver.visible = true
@@ -174,6 +174,7 @@ Item {
             // otherwise only the leader would trigger a "User.RestartGame" event
             // this is called internally though, thus make it a system event
             if(gameRestarted) {
+                gameScene.jokerButton.visible = true
                 console.debug("Game restarted")
             }
         }
@@ -348,6 +349,7 @@ Item {
                     for (i = 0; i < playerHands.children.length; i++) {
                         if (playerHands.children[i].player.userId === tempMessage.userId){
                             if(playerHands.children[i].checkDone()){
+                                playerHands.children[i].done=true
                                 multiplayer.sendMessage(messageSetDone, {userId: tempMessage.userId})
                             }
                             else{
@@ -533,6 +535,7 @@ Item {
                         if (playerHands.children[i].player.userId===multiplayer.localPlayer.userId){
                             if(playerHands.children[i].checkDone()){
                                 if(multiplayer.amLeader){
+                                    playerHands.children[i].done=true
                                     multiplayer.sendMessage(messageSetDone, {userId: multiplayer.activePlayer.userId})
                                 }
                                 else{
@@ -561,9 +564,9 @@ Item {
                     // if the selected card is in the playerHand of the active player
                     if (playerHands.children[i].inHand(cardId) && playerHands.children[i].hand.length===0
                             && playerHands.children[i].china.length===0){//check if valid also
-                        playerHands.children[i].moveFromChinaHiddenToHand(playerHands.children[i].player.userId,cardId,1000)
                         var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
                         multiplayer.sendMessage(messageMoveCardIdToHand, {cardId: cardId, userId: userId, interval: 1500})
+                        moveFromChinaHiddenToHand(playerHands.children[i].player.userId,cardId,1500)
                         takeDepot(userId,2500)
                         acted=true
                         return
@@ -684,7 +687,6 @@ Item {
                 if (!multiplayer.activePlayer || !multiplayer.activePlayer.connected && depot.current){
                     depot.current.hidden = false
                 }
-                break
             }
         }
     }
@@ -761,7 +763,6 @@ Item {
                     removeDepot(1500,true)
                     return
                 }
-                break
             }
         }
         console.debug("endTurn() from playRandomValid")
@@ -1350,7 +1351,7 @@ Item {
         var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
         //check if the active player has won the game
         for (var i = 0; i < playerHands.children.length; i++) {
-            if (playerHands.children[i].player === multiplayer.activePlayer && !depot.skipped && !playerHands.children[i].done){
+            if (playerHands.children[i].player === multiplayer.activePlayer && !depot.skipped){
                 if(checkShithead()){
                     endGame()
                     multiplayer.sendMessage(messageEndGame, {userId: userId})
@@ -1359,7 +1360,12 @@ Item {
                 //if 10 was last card start turn for same player
                 if(depot.current && depot.current.variationType === "10"){
                     multiplayer.sendMessage(messageRemoveDepot, {userId: userId, interval:1400})
-                    removeDepot(1500,true)
+                    if(playerHands.children[i].done){
+                        removeDepot(1500,false)
+                    }
+                    else{
+                        removeDepot(1500,true)
+                    }
                     return
                 }
 
