@@ -12,8 +12,6 @@
 <dict>
     <key>CFBundlePrimaryIcon</key>
     <dict>
-    <key>CFBundleIconName</key>
-    <string>Icon</string>
         <key>CFBundleIconFiles</key>
         <array>
         <string>Icon-60.png</string>
@@ -36,8 +34,6 @@
 <dict>
     <key>CFBundlePrimaryIcon</key>
     <dict>
-    <key>CFBundleIconName</key>
-    <string>Icon</string>
         <key>CFBundleIconFiles</key>
         <array>
         <string>Icon-60.png</string>
@@ -56,8 +52,9 @@
         </array>
     </dict>
 </dict>
+
 <key>CFBundleIdentifier</key>
-<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+<string>$(de.altocinco.cards.shithead)</string>
 <key>CFBundleName</key>
 <string>${PRODUCT_NAME}</string>
 <key>CFBundlePackageType</key>
