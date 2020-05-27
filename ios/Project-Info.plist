@@ -35,7 +35,7 @@
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleVersion</key>
-    <string>${PRODUCT_VERSION_CODE}</string>
+    <string>1</string>
     <key>UIStatusBarHidden</key>
     <true/>
     <key>LSRequiresIPhoneOS</key>
