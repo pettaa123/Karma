@@ -62,3 +62,35 @@ ios {
     # Uncomment for using iOS plugin libraries
     # FELGO_PLUGINS += facebook onesignal flurry admob chartboost soomla
 }
+
+DISTFILES += \
+    qml/ShitheadMain.qml \
+    qml/ShitheadMainItem.qml \
+    qml/common/ButtonBase.qml \
+    qml/common/Constants.qml \
+    qml/common/GConsole.qml \
+    qml/common/MenuButton.qml \
+    qml/common/SceneBase.qml \
+    qml/common/SwipeArea.qml \
+    qml/common/qmldir \
+    qml/config.json \
+    qml/game/Card.qml \
+    qml/game/Deck.qml \
+    qml/game/Depot.qml \
+    qml/game/GameLogic.qml \
+    qml/game/PlayerHand.qml \
+    qml/game/Removed.qml \
+    qml/interface/Chat.qml \
+    qml/interface/GameOverWindow.qml \
+    qml/interface/LeaveGameWindow.qml \
+    qml/interface/LikeWindow.qml \
+    qml/interface/PlayerInfo.qml \
+    qml/interface/PlayerTag.qml \
+    qml/interface/SwitchNameWindow.qml \
+    qml/scenes/CardScene.qml \
+    qml/scenes/GameNetworkScene.qml \
+    qml/scenes/GameScene.qml \
+    qml/scenes/InstructionScene.qml \
+    qml/scenes/LoadingScene.qml \
+    qml/scenes/MenuScene.qml \
+    qml/scenes/MultiplayerScene.qml

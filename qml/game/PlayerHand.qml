@@ -199,7 +199,7 @@ Item {
         //scaleHand(1.0)
         done=false
         firstDone=false
-
+        score=0
     }
 
     function neatChina(){
@@ -446,6 +446,9 @@ Item {
 
         done=messageHand.done
         firstDone=messageHand.firstDone
+
+        chinaAccessible=messageHand.chinaAccessible
+        chinaHiddenAccessible=messageHand.chinaHiddenAccessible
 
         hand = []
         for (var i = 0; i < cardIDs.length; i++){

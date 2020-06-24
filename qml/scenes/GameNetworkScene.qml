@@ -12,19 +12,21 @@ SceneBase {
 
   GameNetworkView {
     id: myGameNetworkView
-    onBackClicked: window.state = 'menu'
+    onBackClicked: {
+        myGameNetworkView.visible = false
+        window.state = "menu"
+    }
     gameNetworkItem: gameNetwork
     state: "leaderboard"
     tintColor: "grey"
     anchors.fill: gameWindowAnchorItem
-  }
 
-  onVisibleChanged: {
-    if(visible) {
-      //ga.logScreen("GameNetworkScene")
-      //flurry.logEvent("Screen.GameNetworkScene")
+    onShowCalled: {
+      myGameNetworkView.visible = true
     }
   }
+
+
 }
 
 

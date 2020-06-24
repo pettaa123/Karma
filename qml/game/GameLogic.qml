@@ -1099,6 +1099,10 @@ Item {
             }
             currentPlayerHand.done=playerHands.children[i].done
             currentPlayerHand.firstDone=playerHands.children[i].firstDone
+
+            currentPlayerHand.chinaAccessible=playerHands.children[i].chinaAccessible
+            currentPlayerHand.chinaHiddenAccessible=playerHands.children[i].chinaHiddenAccessible
+
             // add the hand information of a single player
             currentPlayerHands.push(currentPlayerHand)
         }
@@ -1114,8 +1118,6 @@ Item {
         message.gameOver = gameOver
         message.firstRound = firstRound
 
-
-        //SHITHEAD
         if(depot.last) message.last = depot.last.entityId
 
         message.checkLast = depot.checkLast

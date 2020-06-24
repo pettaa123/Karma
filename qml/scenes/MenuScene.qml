@@ -386,8 +386,19 @@ SceneBase {
         if(visible){
             gameNetwork.api.inbox()
             gameNetwork.sync()
+            inBoxTimer.start()
+        }
+        else{
+            inBoxTimer.stop()
         }
     }
-
-
+    // blocks the player if multiple cards could be layn for a short period of time and trigger a new turn when he doesnt pick another card
+    Timer {
+        id: inBoxTimer
+        repeat: true
+        interval: 5000
+        onTriggered: {
+            gameNetwork.api.inbox()
+        }
+    }
 }
