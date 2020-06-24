@@ -629,8 +629,8 @@ Item {
     }
 
     function checkFirstDone(){
-        for (var i = 0; i < playerHands.children.length; i++) {
-            var numberDones=0
+        var numberDones=0
+        for (var i = 0; i < playerHands.children.length; i++) {          
             if(playerHands.children[i].checkDone()){
                 numberDones++
             }

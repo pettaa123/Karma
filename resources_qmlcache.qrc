@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<RCC>
+    <qresource prefix="/">
+        <file alias="qml">qml</file>
+        <file alias="qml/common">qml/common</file>
+        <file alias="qml/game">qml/game</file>
+        <file alias="qml/interface">qml/interface</file>
+        <file alias="qml/scenes">qml/scenes</file>
+    </qresource>
+</RCC>
