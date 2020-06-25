@@ -27,13 +27,6 @@ Item {
         source: "../../assets/snd/skip.wav"
     }
 
-    // sound effect when player completes four
-    SoundEffect {
-        volume: 0.5
-        id: yeahSound
-        source: "../../assets/snd/yeah.wav"
-    }
-
 
     function fourSames(){
         if(!current || !last){return false}
@@ -45,7 +38,6 @@ Item {
             reached=false
             counter++
             if(counter===4){
-                yeahSound.play()
                 return true
             }
             var z= toBeChecked.z

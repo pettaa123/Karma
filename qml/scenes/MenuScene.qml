@@ -396,7 +396,7 @@ SceneBase {
     Timer {
         id: inBoxTimer
         repeat: true
-        interval: 5000
+        interval: 7000
         onTriggered: {
             gameNetwork.api.inbox()
         }

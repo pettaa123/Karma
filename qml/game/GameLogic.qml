@@ -15,7 +15,7 @@ Item {
     // turn time for AI players, in milliseconds
     property int aiTurnTime: 1200
     // restart the game at the end after a few seconds
-    property int restartTime: 9000
+    property int restartTime: 12000
     property bool acted: false
     property bool gameOver: false
 
@@ -41,7 +41,7 @@ Item {
     property int messageResetCurrentAndLast: 17
     property int messageMoveCardIdToHand: 18
     property int messageSetDone: 19
-    property int messageSetFirstRound: 20
+    property int messageResetFirstRound: 20
     property int messageExchangeCards: 21
     property int messageIThinkImDone: 22
 
@@ -55,16 +55,23 @@ Item {
         source: "../../assets/snd/juhu.wav"
     }
 
-    // win sound
+    // loser sound
     SoundEffect {
         volume: 0.5
         id: loserSound
         source: "../../assets/snd/ohno.wav"
     }
 
+    // sound effect when player completes four
+    SoundEffect {
+        volume: 0.5
+        id: yeahSound
+        source: "../../assets/snd/yeah.wav"
+    }
+
     //knock sound
     SoundEffect {
-        volume: 0.3
+        volume: 0.25
         id: knockSound
         source: "../../assets/snd/knock.wav"
     }
@@ -123,7 +130,6 @@ Item {
         onTriggered: {
             aiTimeOut.stop()
             gameLogic.executeAIMove()
-            //endTurn()
         }
     }
 
@@ -375,7 +381,12 @@ Item {
                     return
                 }
                 removeDepot(tempMessage.interval,false)
+                startTurnTimer()
+                if(tempMessage.fourSames){
+                    yeahSound.play()
+                }
             }
+
 
             // move card to depot
             else if (code == messageMoveDepotToHand){
@@ -389,7 +400,6 @@ Item {
                     return
                 }
                 takeDepot(tempMessage.userId,tempMessage.interval)
-
             }
 
             // move card to depot
@@ -407,20 +417,11 @@ Item {
             }
 
             // sync skipped state
-            else if (code == messageSetFirstRound){
-                // if there is an active player with a different userId, the message is invalid
-                // the message was probably sent after the leader triggered the next turn
-                if (multiplayer.leaderPlayer.userId !== tempMessage.userId){
-                    multiplayer.leaderCode(function() {
-                        console.debug("sendGameSateToPlayer from messageSetSkipped")
-                        sendGameStateToPlayer(tempMessage.userId)
-                    })
-                    return
-                }
-                firstRound = tempMessage.firstRoundBool
+            else if (code == messageResetFirstRound){
+                //firstRound = false
                 knockSound.play()
-                unshakeCards()
-                scaleHand(1.0)
+                //unshakeCards()
+                //scaleHand(1.0)
                 gameLogic.startTurnTimer()
             }
 
@@ -560,8 +561,9 @@ Item {
                     }
 
                     if(depot.fourSames()){
-                        multiplayer.sendMessage(messageRemoveDepot, {userId: multiplayer.localPlayer.userId, interval:1400})
-                        removeDepot(1500,true)
+                        multiplayer.sendMessage(messageRemoveDepot, {userId: multiplayer.localPlayer.userId, interval:1400, fourSames: true})
+                        removeDepot(1500,true,true)
+                        yeahSound.play()
                         return
                     }
                     endTurn()
@@ -630,7 +632,7 @@ Item {
 
     function checkFirstDone(){
         var numberDones=0
-        for (var i = 0; i < playerHands.children.length; i++) {          
+        for (var i = 0; i < playerHands.children.length; i++) {
             if(playerHands.children[i].checkDone()){
                 numberDones++
             }
@@ -732,7 +734,9 @@ Item {
 
     // let AI take over if the player is not skipped
     function executeAIMove() {
-        playRandomValids()
+        if(!gameOver){
+            playRandomValids()
+        }
     }
 
     // play a random valid card from the playerHand of the active player
@@ -782,8 +786,9 @@ Item {
                     }
                 }
                 if(depot.fourSames()){
-                    multiplayer.sendMessage(messageRemoveDepot, {userId: userId, interval:1400})
+                    multiplayer.sendMessage(messageRemoveDepot, {userId: userId, interval:1400, fourSames: true})
                     removeDepot(1500,true)
+                    yeahSound.play()
                     return
                 }
             }
@@ -897,7 +902,7 @@ Item {
         }
         // schedule AI to take over in 3 seconds in case the player is gone
         multiplayer.leaderCode(function() {
-            if (!multiplayer.activePlayer || !multiplayer.activePlayer.connected) {
+            if (!multiplayer.activePlayer || !multiplayer.activePlayer.connected ) {
                 aiTimeOut.start()
             }
         })
@@ -923,11 +928,10 @@ Item {
         if(gameLogic.firstRound){
             unshakeCards()
             firstRound=false
+            scaleHand(1.0)
 
-            // player timed out, so leader should take over
             multiplayer.leaderCode(function () {
-                var userId = multiplayer.activePlayer ? multiplayer.activePlayer.userId : 0
-                multiplayer.sendMessage(messageSetFirstRound,{firstRoundBool: false, userId: userId})
+                multiplayer.sendMessage(messageResetFirstRound)
                 knockSound.play()
                 scaleHand(1.0)
                 //start turn for player with most fours
@@ -1410,7 +1414,7 @@ Item {
                 //}
                 //if 10 was last card start turn for same player
                 if(depot.current && depot.current.variationType === "10"){
-                    multiplayer.sendMessage(messageRemoveDepot, {userId: userId, interval:1400})
+                    multiplayer.sendMessage(messageRemoveDepot, {userId: userId, interval:1400, fourSames: false})
                     if(playerHands.children[i].done){
                         removeDepot(1500,false)
                         break
@@ -1543,7 +1547,7 @@ Item {
         // stop all timers and end the game
         scaleHand(1.0)
         gameOver = true
-        aiTimeOut.stop()
+        aiTimeOut.running=false
         timer.running = false
 
         multiplayer.leaderCode(function () {
