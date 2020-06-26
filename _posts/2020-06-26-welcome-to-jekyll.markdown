@@ -2,7 +2,7 @@
 layout: post
 title:  "Welcome to Karma!"
 date:   2020-06-26 10:22:36 +0200
-categories: jekyll update
+categories: karma update
 ---
 Today Karma will be released on appstore and playstore. Technically it was deduced from Felgo's card game sample ONU. It is a card game also commonly known as Shithead, Palace, Shed, China Hand or Threes and popular among backpackers and 100% free to play. You don't even have to register.
 
