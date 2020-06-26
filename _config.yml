@@ -31,6 +31,16 @@ theme: minima
 plugins:
   - jekyll-feed
 
+ github: [metadata]
+ encoding: UTF-8
+ kramdown:
+   input: GFM
+   hard_wrap: false
+ future: true
+ jailed: false
+ theme: jekyll-theme-primer
+ gfm_quirks: paragraph_end
+
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
