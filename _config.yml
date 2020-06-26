@@ -22,8 +22,8 @@ title: Karma
 email: tuppatsch@gmx.de
 description: >- # this means to ignore newlines until "baseurl:"
   Karma card game contact site.
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+baseurl: "/Karma" # the subpath of your site, e.g. /blog
+url: "https://pettaa123.github.io"
 github_username:  pettaa123
 
 # Build settings
