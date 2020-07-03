@@ -124,7 +124,7 @@ GameWindow {
         latencySimulationTime: system.desktopPlatform && !system.publishBuild ? 200 : 0 // allows to simulate latency values on Desktop. for published games, always set this to 0!
 
         //appKey: Constants.appKey
-        //pushKey: Constants.pushKey
+        pushKey: Constants.pushKey
         // NOTE: do NOT use these demo keys for publishing your game, we might remove the demo apps in the future!
         // instead, use your own ones from https://cloud.felgo.com/
 
